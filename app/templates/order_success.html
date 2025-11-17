@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Статус заказа{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm text-center">
+                <div class="card-body p-5">
+                    {% if order.status == 'Paid' %}
+                        <i class="fa-solid fa-check-circle text-success fa-5x mb-4"></i>
+                        <h2 class="text-success mb-3">Заказ успешно оплачен!</h2>
+                    {% elif order.status == 'Failed' %}
+                        <i class="fa-solid fa-times-circle text-danger fa-5x mb-4"></i>
+                        <h2 class="text-danger mb-3">Ошибка оплаты</h2>
+                    {% else %}
+                        <i class="fa-solid fa-clock text-warning fa-5x mb-4"></i>
+                        <h2 class="text-warning mb-3">Платеж в обработке</h2>
+                    {% endif %}
+                    
+                    <p class="h4 mb-3">
+                        Сумма: <strong>{{ "{:,.2f}".format(order.total_amount | float) | replace(",", " ") }} ₽</strong>
+                    </p>
+                    
+                    <p class="text-muted">
+                        {% if order.status == 'Paid' %}
+                            Ваш заказ #{{ order.id }} успешно оплачен и передан в обработку.
+                        {% elif order.status == 'Failed' %}
+                            Платеж по заказу #{{ order.id }} не прошел. Попробуйте еще раз.
+                        {% else %}
+                            Статус заказа #{{ order.id }} скоро обновится после проверки платежа.
+                        {% endif %}
+                    </p>
+                    
+                    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mt-4">
+                        <a href="{{ url_for('profile') }}" class="btn btn-primary btn-lg px-4">
+                            <i class="fa-solid fa-user me-2"></i>Личный кабинет
+                        </a>
+                        <a href="{{ url_for('catalog') }}" class="btn btn-outline-secondary btn-lg px-4">
+                            <i class="fa-solid fa-arrow-left me-2"></i>В каталог
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

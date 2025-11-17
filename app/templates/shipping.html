@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Доставка и возврат{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-10 offset-lg-1">
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold text-primary mb-4">Доставка и условия возврата</h2>
+                <p class="lead fs-4">
+                    Мы заботимся о том, чтобы ваш заказ был доставлен быстро и безопасно
+                </p>
+            </div>
+
+            <div class="row g-4 mb-5">
+                <div class="col-md-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="mb-0"><i class="fa-solid fa-truck me-2"></i> Доставка</h4>
+                        </div>
+                        <div class="card-body p-4">
+                            <p class="fs-5">Мы осуществляем доставку по всей территории Российской Федерации.</p>
+                            <ul class="list-unstyled">
+                                <li class="mb-3 pb-3 border-bottom">
+                                    <strong>Москва и МО:</strong> Курьером 1-2 дня. 400 ₽ (бесплатно от 15 000 ₽)
+                                </li>
+                                <li class="mb-3 pb-3 border-bottom">
+                                    <strong>Регионы РФ:</strong> ТК СДЭК, Деловые Линии. 3-7 дней, цена по тарифам
+                                </li>
+                                <li class="mb-0">
+                                    <strong>Самовывоз:</strong> Из склада в Москве по предварительной договоренности
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-success text-white">
+                            <h4 class="mb-0"><i class="fa-solid fa-right-left me-2"></i> Возврат</h4>
+                        </div>
+                        <div class="card-body p-4">
+                            <p class="mb-3 fs-5">Возврат товара надлежащего качества в течение <strong>14 дней</strong> с момента получения:</p>
+                            <ul>
+                                <li class="mb-2">Товар не был в употреблении</li>
+                                <li class="mb-2">Сохранены упаковка, пломбы, ярлыки</li>
+                                <li class="mb-2">Есть чек или товарная накладная</li>
+                            </ul>
+                            <div class="alert alert-danger mt-3">
+                                <strong>Важно!</strong> Возврат технически сложных или поврежденных товаров не производится
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info text-center">
+                <i class="fa-solid fa-info-circle fa-2x mb-2 d-block opacity-75"></i>
+                <p class="mb-0 fs-5">По вопросам доставки и возврата обращайтесь в поддержку: <strong>+7 (495) 123-45-67</strong></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

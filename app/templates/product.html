@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container product-detail">
+    <div class="row">
+        <!-- Левая колонка: Изображения -->
+        <div class="col-md-6">
+            {% if images %}
+            <div id="product-carousel" class="carousel slide" data-ride="carousel">
+                <!-- Индикаторы -->
+                <ol class="carousel-indicators">
+                    {% for image in images %}
+                    <li data-target="#product-carousel" data-slide-to="{{ loop.index0 }}" {% if loop.first %}class="active"{% endif %}></li>
+                    {% endfor %}
+                </ol>
+                
+                <!-- Слайды -->
+                <div class="carousel-inner" role="listbox">
+                    {% for image in images %}
+                    <div class="item {% if loop.first %}active{% endif %}">
+                        <img src="{{ url_for('static', filename='images/' + image.image_url) }}" alt="{{ product.name }}" class="img-responsive center-block">
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Управление -->
+                <a class="left carousel-control" href="#product-carousel" role="button" data-slide="prev">
+                    <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+                    <span class="sr-only">Предыдущий</span>
+                </a>
+                <a class="right carousel-control" href="#product-carousel" role="button" data-slide="next">
+                    <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+                    <span class="sr-only">Следующий</span>
+                </a>
+            </div>
+            {% else %}
+            <img src="{{ url_for('static', filename='images/default_product.png') }}" alt="{{ product.name }}" class="img-responsive">
+            {% endif %}
+        </div>
+
+        <!-- Правая колонка: Информация -->
+        <div class="col-md-6">
+            <h1 class="product-title">{{ product.name }}</h1>
+            
+            <div class="product-price">
+                <span class="current-price">{{ "%.2f"|format(product.price) }} ₽</span>
+                {% if product.old_price %}
+                <span class="old-price">{{ "%.2f"|format(product.old_price) }} ₽</span>
+                {% endif %}
+            </div>
+
+            <div class="product-stock">
+                {% if product.in_stock > 10 %}
+                    <span class="label label-success">В наличии: {{ product.in_stock }} шт.</span>
+                {% elif product.in_stock > 0 %}
+                    <span class="label label-warning">Осталось мало: {{ product.in_stock }} шт.</span>
+                {% else %}
+                    <span class="label label-danger">Нет в наличии</span>
+                {% endif %}
+            </div>
+
+            <div class="product-description">
+                <h3>Описание</h3>
+                <p>{{ product.description or 'Описание отсутствует' }}</p>
+            </div>
+
+            <div class="product-details">
+                <ul class="list-unstyled">
+                    <li><strong>Категория:</strong> {{ product.category.name }}</li>
+                    <li><strong>Бренд:</strong> {{ product.brand.name }}</li>
+                    <li><strong>Артикул:</strong> {{ product.sku }}</li>
+                </ul>
+            </div>
+
+            <form action="{{ url_for('add_to_cart_product_page', product_id=product.id) }}" method="POST" class="add-to-cart-form">
+                <div class="quantity-selector">
+                    <label for="quantity">Количество:</label>
+                    <input type="number" id="quantity" name="quantity" value="1" min="1" max="{{ product.in_stock }}" class="form-control" style="width: 100px; display: inline-block;">
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-lg" {% if product.in_stock == 0 %}disabled{% endif %}>
+                    <i class="fas fa-shopping-cart"></i> Добавить в корзину
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

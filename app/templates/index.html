@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">Лучшая сантехника для вашего дома</h1>
+            <p class="hero-subtitle">Широкий выбор, гарантия качества, доставка по всей России</p>
+            <a href="{{ url_for('catalog') }}" class="btn btn-primary btn-lg hero-btn">Перейти в каталог</a>
+        </div>
+    </div>
+</div>
+
+<!-- Categories Section -->
+<section class="categories-section">
+    <div class="container">
+        <h2 class="section-title">Категории товаров</h2>
+        <div class="row">
+            {% for category in categories %}
+            <div class="col-sm-6 col-md-4 col-lg-2 category-card">
+                <a href="{{ url_for('catalog', category_id=category.id) }}" class="category-link">
+                    <div class="category-icon">
+                        <i class="fas fa-bath"></i>
+                    </div>
+                    <h4 class="category-name">{{ category.name }}</h4>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products Section -->
+<section class="featured-products-section">
+    <div class="container">
+        <h2 class="section-title">Товары дня</h2>
+        <div class="row">
+            {% for product in featured_products %}
+            <div class="col-sm-6 col-md-4 col-lg-3 product-card-wrapper">
+                <div class="product-card">
+                    <div class="product-image">
+                        <a href="{{ url_for('product', product_id=product.id) }}">
+                            <img src="{{ url_for('static', filename='images/' + product.first_image) }}" alt="{{ product.name }}" class="img-responsive">
+                        </a>
+                        {% if product.old_price %}
+                        <span class="discount-badge">-{{ ((product.old_price - product.price) / product.old_price * 100)|round|int }}%</span>
+                        {% endif %}
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">
+                            <a href="{{ url_for('product', product_id=product.id) }}">{{ product.name }}</a>
+                        </h3>
+                        <div class="product-price">
+                            <span class="current-price">{{ "%.2f"|format(product.price) }} ₽</span>
+                            {% if product.old_price %}
+                            <span class="old-price">{{ "%.2f"|format(product.old_price) }} ₽</span>
+                            {% endif %}
+                        </div>
+                        <div class="product-stock">
+                            {% if product.in_stock > 10 %}
+                                <span class="label label-success">В наличии</span>
+                            {% elif product.in_stock > 0 %}
+                                <span class="label label-warning">Осталось мало</span>
+                            {% else %}
+                                <span class="label label-danger">Нет в наличии</span>
+                            {% endif %}
+                        </div>
+                        <div class="product-actions">
+                            <form action="{{ url_for('add_to_cart_product_page', product_id=product.id) }}" method="POST" class="add-to-cart-form">
+                                <button type="submit" class="btn btn-primary btn-sm" {% if product.in_stock == 0 %}disabled{% endif %}>
+                                    <i class="fas fa-shopping-cart"></i> В корзину
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 feature-item">
+                <i class="fas fa-truck feature-icon"></i>
+                <h3>Быстрая доставка</h3>
+                <p>Доставка по всей России от 1 дня</p>
+            </div>
+            <div class="col-md-4 feature-item">
+                <i class="fas fa-shield-alt feature-icon"></i>
+                <h3>Гарантия качества</h3>
+                <p>Официальная гарантия от производителей</p>
+            </div>
+            <div class="col-md-4 feature-item">
+                <i class="fas fa-ruble-sign feature-icon"></i>
+                <h3>Лучшие цены</h3>
+                <p>Низкие цены и регулярные скидки</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

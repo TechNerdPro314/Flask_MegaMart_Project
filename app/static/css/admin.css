@@ -1,0 +1,162 @@
+/* app/static/css/admin.css */
+
+/* Основные переменные для тем */
+:root {
+    --primary-color: #FF6B00;
+    --primary-hover: #E55A00;
+    --sidebar-bg: #1a1a1a;
+    --sidebar-text: #ffffff;
+    --body-bg: #f8f9fa;
+    --card-bg: #ffffff;
+    --text-color: #333333;
+    --border-color: #dee2e6;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+}
+
+/* Темная тема */
+body.dark-theme {
+    --body-bg: #121212;
+    --card-bg: #1e1e1e;
+    --text-color: #e0e0e0;
+    --border-color: #444444;
+    --sidebar-bg: #000000;
+}
+
+/* Базовые стили */
+body {
+    background-color: var(--body-bg);
+    color: var(--text-color);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* Сайдбар */
+.sidebar {
+    background-color: var(--sidebar-bg) !important;
+}
+
+.sidebar-brand {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.sidebar-brand:hover {
+    background-color: var(--primary-hover) !important;
+}
+
+/* Кнопки */
+.btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Карточки */
+.card {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+
+/* Таблицы */
+.table {
+    background-color: var(--card-bg);
+}
+
+.table th {
+    background-color: var(--primary-color);
+    color: white;
+    border-bottom: none !important;
+    font-weight: 600;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(255, 107, 0, 0.05) !important;
+}
+
+/* Формы */
+.form-control, .form-select {
+    border-radius: 8px !important;
+    border: 1px solid var(--border-color) !important;
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+    transition: border-color 0.2s;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 0.2rem rgba(255, 107, 0, 0.25) !important;
+}
+
+/* Изображения в списках */
+.image-preview {
+    border-radius: 8px;
+    object-fit: cover;
+    transition: transform 0.2s;
+}
+
+.image-preview:hover {
+    transform: scale(1.05);
+}
+
+/* Статусы */
+.badge-success {
+    background-color: var(--success-color) !important;
+}
+
+.badge-danger {
+    background-color: var(--danger-color) !important;
+}
+
+.badge-warning {
+    background-color: var(--warning-color) !important;
+    color: #000 !important;
+}
+
+/* Анимации */
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Переключатель темы в админке */
+.theme-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: all 0.3s;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+}

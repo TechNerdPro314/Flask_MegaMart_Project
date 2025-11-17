@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}404 Не найдено{% endblock %}
+
+{% block content %}
+<div class="container text-center my-5 py-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h1 class="display-1 text-danger">404</h1>
+            <h2 class="mb-4">Упс! Страница не найдена.</h2>
+            <p class="lead">
+                К сожалению, по вашему запросу ничего не найдено. Возможно, вы ошиблись в адресе или страница была удалена.
+            </p>
+            <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg mt-3">
+                <i class="fa-solid fa-home me-2"></i> Вернуться на главную
+            </a>
+            <a href="{{ url_for('catalog') }}" class="btn btn-outline-primary btn-lg mt-3 ms-3">
+                <i class="fa-solid fa-list me-2"></i> Перейти в каталог
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

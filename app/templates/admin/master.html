@@ -1,0 +1,21 @@
+{% extends 'admin/base.html' %}
+
+{% block head_css %}
+  {{ super() }}
+  <!-- Подключение кастомных стилей -->
+  <link rel="stylesheet" href="{{ url_for('admin_static', filename='css/admin.css') }}">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block tail_js %}
+  {{ super() }}
+  <!-- Подключение кастомных скриптов -->
+  <script src="{{ url_for('admin_static', filename='js/admin.js') }}"></script>
+{% endblock %}
+
+{% block brand %}
+  <span class="sidebar-brand">
+    <i class="fas fa-store"></i> MegaMart Admin
+  </span>
+{% endblock %}

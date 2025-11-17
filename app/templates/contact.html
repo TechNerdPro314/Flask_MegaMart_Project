@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Контакты{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold text-primary mb-4">Свяжитесь с нами</h2>
+                <p class="lead fs-4">
+                    Мы рады ответить на ваши вопросы и помочь с выбором
+                </p>
+            </div>
+            
+            <div class="row text-center mb-5 g-4">
+                <div class="col-md-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <i class="fa-solid fa-phone fa-3x text-primary mb-3"></i>
+                            <h5>Телефон</h5>
+                            <p class="mb-0 fw-bold fs-5">+7 (495) 123-45-67</p>
+                            <p class="text-muted">Пн-Пт: 9:00 - 18:00 МСК</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <i class="fa-solid fa-envelope fa-3x text-success mb-3"></i>
+                            <h5>Email</h5>
+                            <p class="mb-0 fw-bold fs-5">support@megamart.com</p>
+                            <p class="text-muted">Отвечаем в течение 1 часа</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <i class="fa-solid fa-location-dot fa-3x text-info mb-3"></i>
+                            <h5>Адрес офиса</h5>
+                            <p class="mb-0 fw-bold">г. Москва, ул. Примерная, 1</p>
+                            <p class="text-muted">Склад работает по предзаказу</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-lg">
+                <div class="card-body p-5">
+                    <h4 class="card-title text-center mb-4">Форма обратной связи</h4>
+                    <form>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="name" class="form-label">Ваше имя</label>
+                                <input type="text" class="form-control" id="name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Ваш Email</label>
+                                <input type="email" class="form-control" id="email" required>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <label for="message" class="form-label">Сообщение</label>
+                            <textarea class="form-control" id="message" rows="4" required></textarea>
+                        </div>
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg disabled">
+                                <i class="fa-solid fa-paper-plane me-2"></i>Отправить
+                            </button>
+                            <small class="text-muted mt-2">Функционал пока не подключен</small>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

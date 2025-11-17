@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}500 Ошибка сервера{% endblock %}
+
+{% block content %}
+<div class="container text-center my-5 py-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h1 class="display-1 text-secondary">500</h1>
+            <h2 class="mb-4">Внутренняя ошибка сервера.</h2>
+            <p class="lead">
+                Нам очень жаль, но на сервере произошел сбой. Наши специалисты уже оповещены и работают над устранением проблемы.
+            </p>
+            <p class="text-muted small">
+                Попробуйте обновить страницу или вернуться позже.
+            </p>
+            <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg mt-3">
+                <i class="fa-solid fa-home me-2"></i> Вернуться на главную
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

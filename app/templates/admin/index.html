@@ -1,0 +1,214 @@
+{% extends 'admin/master.html' %}
+
+{% block head_css %}
+{{ super() }}
+<style>
+.stat-card {
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.chart-container {
+    position: relative;
+    height: 300px;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Панель управления MegaMart</h1>
+        </div>
+    </div>
+
+    <!-- Карточки статистики -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-left-primary">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Товаров</div>
+                            <div class="h5 mb-0 font-weight-bold">{{ total_products }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-boxes fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-left-success">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Заказов</div>
+                            <div class="h5 mb-0 font-weight-bold">{{ total_orders }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-left-info">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Пользователей</div>
+                            <div class="h5 mb-0 font-weight-bold">{{ total_users }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-left-warning">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Выручка (30 дней)</div>
+                            <div class="h5 mb-0 font-weight-bold">{{ revenue }} ₽</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-ruble-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- График и таблицы -->
+    <div class="row">
+        <!-- График заказов -->
+        <div class="col-lg-6 mb-4">
+            <div class="card stat-card">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">Заказы за последние 7 дней</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="ordersChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Последние заказы -->
+        <div class="col-lg-6 mb-4">
+            <div class="card stat-card">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">Последние заказы</h6>
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Клиент</th>
+                                <th>Сумма</th>
+                                <th>Статус</th>
+                                <th>Дата</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in latest_orders %}
+                            <tr>
+                                <td><a href="/admin-panel/order/edit/?id={{ order.id }}">#{{ order.id }}</a></td>
+                                <td>{{ order.customer.name }}</td>
+                                <td>{{ "%.2f"|format(order.total_amount) }} ₽</td>
+                                <td>
+                                    {% if order.status == 'Paid' %}
+                                        <span class="label label-success">Оплачен</span>
+                                    {% elif order.status == 'Pending' %}
+                                        <span class="label label-warning">В ожидании</span>
+                                    {% elif order.status == 'Failed' %}
+                                        <span class="label label-danger">Ошибка</span>
+                                    {% else %}
+                                        <span class="label label-default">{{ order.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ order.created_at.strftime('%d.%m.%Y') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Топ товаров -->
+    <div class="row">
+        <div class="col-lg-12 mb-4">
+            <div class="card stat-card">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">Топ-5 продаваемых товаров</h6>
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Товар</th>
+                                <th>Продано (шт)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in popular_products %}
+                            <tr>
+                                <td>{{ product.name }}</td>
+                                <td><span class="badge badge-info">{{ product.total_sold }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// График заказов
+const ctx = document.getElementById('ordersChart').getContext('2d');
+const ordersChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: {{ days|tojson }},
+        datasets: [{
+            label: 'Количество заказов',
+            data: {{ order_counts|tojson }},
+            borderColor: 'rgb(255, 107, 0)',
+            backgroundColor: 'rgba(255, 107, 0, 0.2)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container catalog-page">
+    <div class="row">
+        <!-- Фильтры -->
+        <div class="col-md-3">
+            <div class="filters-panel">
+                <h4>Фильтры</h4>
+                <form method="GET" action="{{ url_for('catalog') }}" id="filter-form">
+                    <!-- Категории -->
+                    <div class="filter-group">
+                        <label>Категория:</label>
+                        <select name="category_id" class="form-control">
+                            <option value="">Все категории</option>
+                            {% for category in all_categories %}
+                            <option value="{{ category.id }}" {% if current_category_id == category.id %}selected{% endif %}>{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Бренды -->
+                    <div class="filter-group">
+                        <label>Бренд:</label>
+                        <select name="brand_id" class="form-control">
+                            <option value="">Все бренды</option>
+                            {% for brand in all_brands %}
+                            <option value="{{ brand.id }}" {% if current_brand_id == brand.id %}selected{% endif %}>{{ brand.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Цена -->
+                    <div class="filter-group">
+                        <label>Цена (₽):</label>
+                        <div class="row">
+                            <div class="col-xs-6">
+                                <input type="number" name="min_price" class="form-control" placeholder="От" value="{{ current_min_price or '' }}">
+                            </div>
+                            <div class="col-xs-6">
+                                <input type="number" name="max_price" class="form-control" placeholder="До" value="{{ current_max_price or '' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Поиск -->
+                    <div class="filter-group">
+                        <label>Поиск:</label>
+                        <input type="text" name="search_query" class="form-control" placeholder="Название товара" value="{{ current_search_query or '' }}">
+                    </div>
+
+                    <!-- Сортировка -->
+                    <div class="filter-group">
+                        <label>Сортировка:</label>
+                        <select name="sort_by" class="form-control">
+                            <option value="price_asc" {% if current_sort_by == 'price_asc' %}selected{% endif %}>Цена: от дешевых</option>
+                            <option value="price_desc" {% if current_sort_by == 'price_desc' %}selected{% endif %}>Цена: от дорогих</option>
+                            <option value="name_asc" {% if current_sort_by == 'name_asc' %}selected{% endif %}>Название: А-Я</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">Применить</button>
+                    <a href="{{ url_for('catalog') }}" class="btn btn-default btn-block">Сбросить</a>
+                </form>
+            </div>
+        </div>
+
+        <!-- Список товаров -->
+        <div class="col-md-9">
+            <div class="row">
+                {% for product in products %}
+                <div class="col-sm-6 col-md-4 product-card-wrapper">
+                    <div class="product-card">
+                        <div class="product-image">
+                            <a href="{{ url_for('product', product_id=product.id) }}">
+                                <img src="{{ url_for('static', filename='images/' + product.first_image) }}" alt="{{ product.name }}" class="img-responsive">
+                            </a>
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">
+                                <a href="{{ url_for('product', product_id=product.id) }}">{{ product.name }}</a>
+                            </h3>
+                            <div class="product-price">
+                                <span class="current-price">{{ "%.2f"|format(product.price) }} ₽</span>
+                                {% if product.old_price %}
+                                <span class="old-price">{{ "%.2f"|format(product.old_price) }} ₽</span>
+                                {% endif %}
+                            </div>
+                            <div class="product-stock">
+                                {% if product.in_stock > 10 %}
+                                    <span class="label label-success">В наличии</span>
+                                {% elif product.in_stock > 0 %}
+                                    <span class="label label-warning">Осталось мало</span>
+                                {% else %}
+                                    <span class="label label-danger">Нет в наличии</span>
+                                {% endif %}
+                            </div>
+                            <div class="product-actions">
+                                <form action="{{ url_for('add_to_cart_product_page', product_id=product.id) }}" method="POST" class="add-to-cart-form">
+                                    <button type="submit" class="btn btn-primary btn-sm" {% if product.in_stock == 0 %}disabled{% endif %}>
+                                        <i class="fas fa-shopping-cart"></i> В корзину
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Пагинация -->
+            <div class="pagination-wrapper">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        {% if pagination.has_prev %}
+                        <li>
+                            <a href="{{ url_for('catalog', page=pagination.prev_num, category_id=current_category_id, brand_id=current_brand_id, min_price=current_min_price, max_price=current_max_price, search_query=current_search_query, sort_by=current_sort_by) }}">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        {% for page_num in pagination.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num == pagination.page %}
+                                <li class="active"><a href="#">{{ page_num }}</a></li>
+                                {% else %}
+                                <li>
+                                    <a href="{{ url_for('catalog', page=page_num, category_id=current_category_id, brand_id=current_brand_id, min_price=current_min_price, max_price=current_max_price, search_query=current_search_query, sort_by=current_sort_by) }}">
+                                        {{ page_num }}
+                                    </a>
+                                </li>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if pagination.has_next %}
+                        <li>
+                            <a href="{{ url_for('catalog', page=pagination.next_num, category_id=current_category_id, brand_id=current_brand_id, min_price=current_min_price, max_price=current_max_price, search_query=current_search_query, sort_by=current_sort_by) }}">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
