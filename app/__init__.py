@@ -159,19 +159,20 @@ def create_app():
 
     with app.app_context():
         # --- Регистрация Blueprints ---
-        from .main.routes import main_bp
+        # ИСПРАВЛЕНО: импортируем blueprint'ы из пакетов, а не из routes файлов
+        from .main import main_bp
 
         app.register_blueprint(main_bp)
 
-        from .auth.routes import auth_bp
+        from .auth import auth_bp
 
         app.register_blueprint(auth_bp, url_prefix="/auth")
 
-        from .cart.routes import cart_bp
+        from .cart import cart_bp
 
         app.register_blueprint(cart_bp, url_prefix="/cart")
 
-        from .api.routes import api_bp
+        from .api import api_bp
 
         app.register_blueprint(api_bp, url_prefix="/api")
 

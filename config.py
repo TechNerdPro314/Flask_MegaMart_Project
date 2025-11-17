@@ -22,8 +22,10 @@ class Config:
     ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
     # Настройки кэша
-    CACHE_TYPE = "SimpleCache"
+    CACHE_TYPE = os.environ.get("CACHE_TYPE") or "SimpleCache"
     CACHE_DEFAULT_TIMEOUT = 300
+    # URL для подключения к Redis
+    CACHE_REDIS_URL = os.environ.get("CACHE_REDIS_URL")
 
     # YooKassa
     YOOKASSA_SHOP_ID = os.environ.get("YOOKASSA_SHOP_ID")

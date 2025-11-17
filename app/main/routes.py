@@ -6,23 +6,25 @@ from flask import (
     current_app,
     render_template_string,
 )
-from app import db, cache
+from app import db
 from app.models import Product, Category, Brand, ProductImage
 from datetime import datetime
 from . import main_bp
+from sqlalchemy.orm import joinedload, selectinload
 
 
 def add_first_image_to_products(products):
-    """Добавляет первое изображение к каждому товару в списке"""
+    """
+    Эффективно добавляет первое изображение к каждому товару в списке.
+    Предполагается, что `product.images` уже загружены с помощью selectinload.
+    """
     for product in products:
-        first_image = (
-            ProductImage.query.filter_by(product_id=product.id)
-            .order_by(ProductImage.sort_order)
-            .first()
-        )
-        product.first_image = (
-            first_image.image_url if first_image else "default_product.png"
-        )
+        if product.images:
+            # Сортируем уже загруженные изображения по sort_order
+            sorted_images = sorted(product.images, key=lambda img: img.sort_order)
+            product.first_image = sorted_images[0].image_url
+        else:
+            product.first_image = "default_product.png"
     return products
 
 
@@ -30,15 +32,21 @@ def add_first_image_to_products(products):
 @main_bp.route("/index")
 def index():
     categories = Category.query.order_by(Category.name).limit(6).all()
-    featured_products = (
-        Product.query.options(
-            db.joinedload(Product.category), db.joinedload(Product.brand)
-        )
-        .order_by(Product.id.desc())
-        .limit(8)
-        .all()
+
+    # Оптимизация: используем selectinload для "жадной" загрузки изображений
+    featured_products_query = Product.query.options(
+        joinedload(Product.category),
+        joinedload(Product.brand),
+        selectinload(
+            Product.images
+        ),  # Загружаем все связанные изображения одним доп. запросом
     )
+    featured_products = (
+        featured_products_query.order_by(Product.id.desc()).limit(8).all()
+    )
+
     featured_products = add_first_image_to_products(featured_products)
+
     return render_template(
         "index.html",
         title="Главная",
@@ -59,8 +67,13 @@ def catalog():
     search_query = request.args.get("search_query", type=str)
     sort_by = request.args.get("sort_by", "price_asc")
 
+    # Оптимизация: используем selectinload для "жадной" загрузки изображений
     query = Product.query.options(
-        db.joinedload(Product.category), db.joinedload(Product.brand)
+        joinedload(Product.category),
+        joinedload(Product.brand),
+        selectinload(
+            Product.images
+        ),  # Загружаем все связанные изображения одним доп. запросом
     )
 
     if category_id:
@@ -108,7 +121,7 @@ def catalog():
 @main_bp.route("/product/<int:product_id>")
 def product(product_id):
     prod = Product.query.options(
-        db.joinedload(Product.category), db.joinedload(Product.brand)
+        joinedload(Product.category), joinedload(Product.brand)
     ).get_or_404(product_id)
     images = (
         ProductImage.query.filter_by(product_id=product_id)
@@ -219,7 +232,6 @@ def sitemap():
     return response
 
 
-# Использование app_errorhandler для регистрации обработчиков на уровне всего приложения
 @main_bp.app_errorhandler(404)
 def not_found_error(error):
     return render_template("errors/404.html", title="Страница не найдена"), 404

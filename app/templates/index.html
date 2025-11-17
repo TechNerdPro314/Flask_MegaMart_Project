@@ -69,7 +69,8 @@
                             {% endif %}
                         </div>
                         <div class="product-actions">
-                            <form action="{{ url_for('cart.add_to_cart', product_id=product.id) }}" method="POST"
+                            <!-- ИСПРАВЛЕНО: обновлена ссылка на переименованный blueprint -->
+                            <form action="{{ url_for('cart_app.add_to_cart', product_id=product.id) }}" method="POST"
                                 class="add-to-cart-form">
                                 <button type="submit" class="btn btn-primary btn-sm" {% if product.in_stock==0
                                     %}disabled{% endif %}>
@@ -81,29 +82,6 @@
                 </div>
             </div>
             {% endfor %}
-        </div>
-    </div>
-</section>
-
-<!-- Features Section -->
-<section class="features-section">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-4 feature-item">
-                <i class="fas fa-truck feature-icon"></i>
-                <h3>Быстрая доставка</h3>
-                <p>Доставка по всей России от 1 дня</p>
-            </div>
-            <div class="col-md-4 feature-item">
-                <i class="fas fa-shield-alt feature-icon"></i>
-                <h3>Гарантия качества</h3>
-                <p>Официальная гарантия от производителей</p>
-            </div>
-            <div class="col-md-4 feature-item">
-                <i class="fas fa-headset feature-icon"></i>
-                <h3>Поддержка клиентов</h3>
-                <p>Наши менеджеры всегда на связи</p>
-            </div>
         </div>
     </div>
 </section>

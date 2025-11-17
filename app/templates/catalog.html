@@ -105,8 +105,9 @@
                                 {% endif %}
                             </div>
                             <div class="product-actions">
-                                <form action="{{ url_for('cart.add_to_cart', product_id=product.id) }}" method="POST"
-                                    class="add-to-cart-form">
+                                <!-- ИСПРАВЛЕНО: обновлена ссылка на переименованный blueprint -->
+                                <form action="{{ url_for('cart_app.add_to_cart', product_id=product.id) }}"
+                                    method="POST" class="add-to-cart-form">
                                     <button type="submit" class="btn btn-primary btn-sm" {% if product.in_stock==0
                                         %}disabled{% endif %}>
                                         <i class="fas fa-shopping-cart"></i> В корзину

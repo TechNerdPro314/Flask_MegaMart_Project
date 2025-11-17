@@ -53,7 +53,8 @@
 
                         <!-- Корзина -->
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('cart.cart_view') }}">
+                            <!-- ИСПРАВЛЕНО: обновлена ссылка на переименованный blueprint -->
+                            <a class="nav-link" href="{{ url_for('cart_app.cart_view') }}">
                                 <i class="fa-solid fa-cart-shopping"></i> Корзина
                                 {% set cart_count = current_user.cart_items.count() if current_user.is_authenticated
                                 else (session['cart']|length if 'cart' in session else 0) %}
@@ -136,7 +137,8 @@
                     <ul class="list-unstyled">
                         <li><a href="{{ url_for('main.index') }}" class="text-muted">Главная</a></li>
                         <li><a href="{{ url_for('main.catalog') }}" class="text-muted">Каталог</a></li>
-                        <li><a href="{{ url_for('cart.cart_view') }}" class="text-muted">Корзина</a></li>
+                        <!-- ИСПРАВЛЕНО: обновлена ссылка на переименованный blueprint -->
+                        <li><a href="{{ url_for('cart_app.cart_view') }}" class="text-muted">Корзина</a></li>
                         <li><a href="{{ url_for('auth.profile') }}" class="text-muted">Профиль</a></li>
                     </ul>
                 </div>
