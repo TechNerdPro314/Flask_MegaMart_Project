@@ -7,7 +7,7 @@
     <h2 class="mb-4">Оформление заказа</h2>
 
     <div class="row g-5">
-        
+
         <div class="col-md-5 col-lg-4 order-md-last">
             <h4 class="d-flex justify-content-between align-items-center mb-3">
                 <span class="text-muted">Ваш заказ</span>
@@ -18,40 +18,39 @@
                 <li class="list-group-item d-flex justify-content-between lh-sm">
                     <div>
                         <h6 class="my-0">{{ item.name }}</h6>
-                        <small class="text-muted">{{ item.quantity }} шт. × {{ "{:,.2f}".format(item.price | float) | replace(",", " ") }} ₽</small>
+                        <small class="text-muted">{{ item.quantity }} шт. × {{ "{:,.2f}".format(item.price | float) |
+                            replace(",", " ") }} ₽</small>
                     </div>
-                    <span class="text-muted">{{ "{:,.2f}".format((item.price * item.quantity) | float) | replace(",", " ") }} ₽</span>
+                    <span class="text-muted">{{ "{:,.2f}".format((item.price * item.quantity) | float) | replace(",", "
+                        ") }} ₽</span>
                 </li>
                 {% endfor %}
-                
+
                 <li class="list-group-item d-flex justify-content-between">
                     <span>Итого (RUB)</span>
                     <strong class="h5">{{ "{:,.2f}".format(total_price | float) | replace(",", " ") }} ₽</strong>
                 </li>
             </ul>
 
-            <a href="{{ url_for('cart') }}" class="btn btn-outline-secondary w-100">
+            <a href="{{ url_for('cart.cart_view') }}" class="btn btn-outline-secondary w-100">
                 Редактировать корзину
             </a>
         </div>
 
         <div class="col-md-7 col-lg-8">
             <h4 class="mb-3">Данные для доставки</h4>
-            <form method="POST" action="{{ url_for('checkout') }}" class="needs-validation" novalidate>
-                
+            <form method="POST" action="{{ url_for('cart.checkout') }}" class="needs-validation" novalidate>
+
                 <div class="mb-3">
                     <label for="user_name" class="form-label">Получатель</label>
-                    <input type="text" class="form-control" id="user_name" 
-                           value="{{ current_user.name or current_user.email }}" readonly>
+                    <input type="text" class="form-control" id="user_name"
+                        value="{{ current_user.name or current_user.email }}" readonly>
                 </div>
 
                 <div class="mb-3">
                     <label for="phone" class="form-label">Телефон</label>
-                    <input type="tel" class="form-control" id="phone" name="phone" 
-                           
-                           value="{{ user_phone or '' }}" 
-                           
-                           placeholder="+7 (XXX) XXX-XX-XX" required>
+                    <input type="tel" class="form-control" id="phone" name="phone" value="{{ user_phone or '' }}"
+                        placeholder="+7 (XXX) XXX-XX-XX" required>
                     <div class="invalid-feedback">
                         Укажите ваш контактный телефон.
                     </div>
@@ -59,9 +58,9 @@
 
                 <div class="mb-3">
                     <label for="address" class="form-label">Адрес доставки</label>
-                    <textarea class="form-control" id="address" name="address" rows="3" 
-                              placeholder="Город, улица, дом, квартира" required>
-                              
+                    <textarea class="form-control" id="address" name="address" rows="3"
+                        placeholder="Город, улица, дом, квартира" required>
+
                         {{ user_address or '' }}
                         
                     </textarea>
@@ -74,13 +73,14 @@
 
                 <h4 class="mb-3">Оплата</h4>
                 <div class="form-check">
-                    <input id="payment_yookassa" name="payment_method" type="radio" class="form-check-input" checked required disabled>
+                    <input id="payment_yookassa" name="payment_method" type="radio" class="form-check-input" checked
+                        required disabled>
                     <label class="form-check-label" for="payment_yookassa">Оплата картой (YooKassa)</label>
                     <p class="text-muted small mt-1">Вы будете перенаправлены на защищенную страницу оплаты.</p>
                 </div>
 
                 <hr class="my-4">
-                
+
                 <button class="w-100 btn btn-primary btn-lg" type="submit">Перейти к оплате</button>
             </form>
         </div>
@@ -88,20 +88,20 @@
 </div>
 
 <script>
-(function () {
-  'use strict'
-  var forms = document.querySelectorAll('.needs-validation')
+    (function () {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation')
 
-  Array.prototype.slice.call(forms)
-    .forEach(function (form) {
-      form.addEventListener('submit', function (event) {
-        if (!form.checkValidity()) {
-          event.preventDefault()
-          event.stopPropagation()
-        }
-        form.classList.add('was-validated')
-      }, false)
-    })
-})()
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
 </script>
 {% endblock %}
