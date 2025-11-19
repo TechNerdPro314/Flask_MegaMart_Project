@@ -5,9 +5,9 @@
 <div class="hero-section">
     <div class="container">
         <div class="hero-content">
-            <h1 class="hero-title">Лучшая сантехника для вашего дома</h1>
-            <p class="hero-subtitle">Широкий выбор, гарантия качества, доставка по всей России</p>
-            <a href="{{ url_for('main.catalog') }}" class="btn btn-primary btn-lg hero-btn">Перейти в каталог</a>
+            <h1 class="hero-title animate__animated animate__fadeInUp">Лучшая сантехника для вашего дома</h1>
+            <p class="hero-subtitle animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">Широкий выбор, гарантия качества, доставка по всей России</p>
+            <a href="{{ url_for('main.catalog') }}" class="btn btn-primary btn-lg hero-btn animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">Перейти в каталог</a>
         </div>
     </div>
 </div>
@@ -15,15 +15,16 @@
 <!-- Categories Section -->
 <section class="categories-section">
     <div class="container">
-        <h2 class="section-title">Категории товаров</h2>
-        <div class="row">
+        <h2 class="section-title text-center mb-5 animate__animated animate__fadeIn">Категории товаров</h2>
+        <div class="row g-4">
             {% for category in categories %}
-            <div class="col-sm-6 col-md-4 col-lg-2 category-card">
-                <a href="{{ url_for('main.catalog', category_id=category.id) }}" class="category-link">
-                    <div class="category-icon">
-                        <i class="fas fa-bath"></i>
+            <div class="col-6 col-sm-4 col-md-3 col-lg-2 category-card">
+                <a href="{{ url_for('main.catalog', category_id=category.id) }}" class="category-link d-block text-center animate__animated animate__fadeIn"
+                   style="animation-delay: {{ loop.index * 0.1 }}s;">
+                    <div class="category-icon mb-3">
+                        <i class="fas fa-bath fa-2x"></i>
                     </div>
-                    <h4 class="category-name">{{ category.name }}</h4>
+                    <h4 class="category-name small">{{ category.name }}</h4>
                 </a>
             </div>
             {% endfor %}
@@ -32,49 +33,57 @@
 </section>
 
 <!-- Featured Products Section -->
-<section class="featured-products-section">
+<section class="featured-products-section py-5">
     <div class="container">
-        <h2 class="section-title">Товары дня</h2>
-        <div class="row">
+        <h2 class="section-title text-center mb-5 animate__animated animate__fadeIn">Товары дня</h2>
+        <div class="row g-4">
             {% for product in featured_products %}
-            <div class="col-sm-6 col-md-4 col-lg-3 product-card-wrapper">
-                <div class="product-card">
-                    <div class="product-image">
-                        <a href="{{ url_for('main.product', product_id=product.id) }}">
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="product-card animate__animated animate__fadeInUp" style="animation-delay: {{ loop.index * 0.1 }}s;">
+                    <div class="product-image position-relative">
+                        {% if current_user.is_authenticated %}
+                        {% set is_in_wishlist = product in current_user.wishlist.all() %}
+                        <button class="btn btn-light btn-sm position-absolute top-0 end-0 m-2 wishlist-toggle-btn"
+                            data-product-id="{{ product.id }}" title="В избранное">
+                            <i
+                                class="fa-heart {% if is_in_wishlist %}fa-solid text-danger{% else %}fa-regular{% endif %}"></i>
+                        </button>
+                        {% endif %}
+                        <a href="{% if product.slug %}{{ url_for('main.product', slug=product.slug) }}{% else %}{{ url_for('main.product', product_id=product.id) }}{% endif %}">
                             <img src="{{ url_for('static', filename='images/' + product.first_image) }}"
-                                alt="{{ product.name }}" class="img-responsive">
+                                alt="{{ product.name }}" class="img-responsive w-100" loading="lazy">
                         </a>
                         {% if product.old_price %}
-                        <span class="discount-badge">-{{ ((product.old_price - product.price) / product.old_price *
+                        <span class="discount-badge position-absolute top-0 start-0 m-2">{{ ((product.old_price - product.price) / product.old_price *
                             100)|round|int }}%</span>
                         {% endif %}
                     </div>
-                    <div class="product-info">
-                        <h3 class="product-title">
-                            <a href="{{ url_for('main.product', product_id=product.id) }}">{{ product.name }}</a>
+                    <div class="product-info p-3">
+                        <h3 class="product-title mb-2">
+                            <a href="{% if product.slug %}{{ url_for('main.product', slug=product.slug) }}{% else %}{{ url_for('main.product', product_id=product.id) }}{% endif %}" class="text-decoration-none">{{ product.name }}</a>
                         </h3>
-                        <div class="product-price">
-                            <span class="current-price">{{ "%.2f"|format(product.price) }} ₽</span>
+                        <div class="product-price mb-2">
+                            <span class="current-price fw-bold">{{ "%.2f"|format(product.price) }} ₽</span>
                             {% if product.old_price %}
-                            <span class="old-price">{{ "%.2f"|format(product.old_price) }} ₽</span>
+                            <span class="old-price text-muted text-decoration-line-through ms-2">{{ "%.2f"|format(product.old_price) }} ₽</span>
                             {% endif %}
                         </div>
-                        <div class="product-stock">
+                        <div class="product-stock mb-3">
                             {% if product.in_stock > 10 %}
-                            <span class="label label-success">В наличии</span>
+                            <span class="badge bg-success">В наличии</span>
                             {% elif product.in_stock > 0 %}
-                            <span class="label label-warning">Осталось мало</span>
+                            <span class="badge bg-warning text-dark">Осталось мало</span>
                             {% else %}
-                            <span class="label label-danger">Нет в наличии</span>
+                            <span class="badge bg-danger">Нет в наличии</span>
                             {% endif %}
                         </div>
                         <div class="product-actions">
-                            <!-- ИСПРАВЛЕНО: обновлена ссылка на переименованный blueprint -->
                             <form action="{{ url_for('cart_app.add_to_cart', product_id=product.id) }}" method="POST"
-                                class="add-to-cart-form">
-                                <button type="submit" class="btn btn-primary btn-sm" {% if product.in_stock==0
+                                class="add-to-cart-form w-100">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                <button type="submit" class="btn btn-primary w-100" {% if product.in_stock==0
                                     %}disabled{% endif %}>
-                                    <i class="fas fa-shopping-cart"></i> В корзину
+                                    <i class="fas fa-shopping-cart me-1"></i>В корзину
                                 </button>
                             </form>
                         </div>

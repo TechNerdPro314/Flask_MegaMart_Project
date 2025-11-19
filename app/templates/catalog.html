@@ -19,7 +19,6 @@
                             {% endfor %}
                         </select>
                     </div>
-
                     <!-- Бренды -->
                     <div class="filter-group">
                         <label>Бренд:</label>
@@ -31,7 +30,6 @@
                             {% endfor %}
                         </select>
                     </div>
-
                     <!-- Цена -->
                     <div class="filter-group">
                         <label>Цена (₽):</label>
@@ -46,14 +44,12 @@
                             </div>
                         </div>
                     </div>
-
                     <!-- Поиск -->
                     <div class="filter-group">
                         <label>Поиск:</label>
                         <input type="text" name="search_query" class="form-control" placeholder="Название товара"
                             value="{{ current_search_query or '' }}">
                     </div>
-
                     <!-- Сортировка -->
                     <div class="filter-group">
                         <label>Сортировка:</label>
@@ -66,7 +62,6 @@
                                 А-Я</option>
                         </select>
                     </div>
-
                     <button type="submit" class="btn btn-primary btn-block">Применить</button>
                     <a href="{{ url_for('main.catalog') }}" class="btn btn-default btn-block">Сбросить</a>
                 </form>
@@ -80,14 +75,22 @@
                 <div class="col-sm-6 col-md-4 product-card-wrapper">
                     <div class="product-card">
                         <div class="product-image">
-                            <a href="{{ url_for('main.product', product_id=product.id) }}">
+                            {% if current_user.is_authenticated %}
+                            {% set is_in_wishlist = product in current_user.wishlist.all() %}
+                            <button class="btn btn-light btn-sm position-absolute top-0 end-0 m-2 wishlist-toggle-btn"
+                                data-product-id="{{ product.id }}" title="В избранное">
+                                <i
+                                    class="fa-heart {% if is_in_wishlist %}fa-solid text-danger{% else %}fa-regular{% endif %}"></i>
+                            </button>
+                            {% endif %}
+                            <a href="{% if product.slug %}{{ url_for('main.product', slug=product.slug) }}{% else %}{{ url_for('main.product', product_id=product.id) }}{% endif %}">
                                 <img src="{{ url_for('static', filename='images/' + product.first_image) }}"
-                                    alt="{{ product.name }}" class="img-responsive">
+                                    alt="{{ product.name }}" class="img-responsive" loading="lazy">
                             </a>
                         </div>
                         <div class="product-info">
                             <h3 class="product-title">
-                                <a href="{{ url_for('main.product', product_id=product.id) }}">{{ product.name }}</a>
+                                <a href="{% if product.slug %}{{ url_for('main.product', slug=product.slug) }}{% else %}{{ url_for('main.product', product_id=product.id) }}{% endif %}">{{ product.name }}</a>
                             </h3>
                             <div class="product-price">
                                 <span class="current-price">{{ "%.2f"|format(product.price) }} ₽</span>
@@ -105,9 +108,9 @@
                                 {% endif %}
                             </div>
                             <div class="product-actions">
-                                <!-- ИСПРАВЛЕНО: обновлена ссылка на переименованный blueprint -->
                                 <form action="{{ url_for('cart_app.add_to_cart', product_id=product.id) }}"
                                     method="POST" class="add-to-cart-form">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                     <button type="submit" class="btn btn-primary btn-sm" {% if product.in_stock==0
                                         %}disabled{% endif %}>
                                         <i class="fas fa-shopping-cart"></i> В корзину
@@ -132,7 +135,6 @@
                             </a>
                         </li>
                         {% endif %}
-
                         {% for page_num in pagination.iter_pages() %}
                         {% if page_num %}
                         {% if page_num == pagination.page %}
@@ -147,7 +149,6 @@
                         {% endif %}
                         {% endif %}
                         {% endfor %}
-
                         {% if pagination.has_next %}
                         <li>
                             <a

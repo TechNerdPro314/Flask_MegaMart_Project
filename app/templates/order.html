@@ -5,113 +5,57 @@
 {% block content %}
 <div class="container my-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="fa-solid fa-receipt me-2"></i>Детали заказа №{{ order.id }}</h2>
-        <a href="{{ url_for('profile') }}" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left me-1"></i> Назад к заказам
+        <h2 class="mb-0">Детали заказа №{{ order.id }}</h2>
+        <a href="{{ url_for('auth.profile') }}" class="btn btn-outline-secondary">
+            <i class="fa-solid fa-arrow-left me-1"></i> К списку заказов
         </a>
     </div>
 
-    <div class="row g-4">
-        <!-- Информация о заказе -->
-        <div class="col-lg-4">
-            <div class="card shadow-sm mb-4 sticky-top" style="top: 20px;">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">Информация о заказе</h5>
-                </div>
-                <div class="card-body">
-                    <p><strong>Дата:</strong> {{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
-                    <p><strong>Сумма:</strong> <span class="h5 text-primary">{{ "{:,.2f}".format(order.total_amount | float) | replace(",", " ") }} ₽</span></p>
-                    <p>
-                        <strong>Статус:</strong> 
-                        {% if order.status == 'Paid' %}
-                            <span class="badge bg-success w-100"><i class="fa-solid fa-check-circle me-1"></i>Оплачен</span>
-                        {% elif order.status == 'Pending' %}
-                            <span class="badge bg-warning text-dark w-100"><i class="fa-solid fa-clock me-1"></i>Ожидает оплаты</span>
-                        {% elif order.status == 'Failed' %}
-                            <span class="badge bg-danger w-100"><i class="fa-solid fa-times-circle me-1"></i>Ошибка оплаты</span>
-                        {% else %}
-                            <span class="badge bg-secondary w-100">{{ order.status }}</span>
-                        {% endif %}
-                    </p>
-                    
-                    <hr>
-                    
-                    <h6 class="fw-bold">Данные получателя</h6>
-                    <p><i class="fa-solid fa-user me-2"></i>{{ current_user.name or current_user.email }}</p>
-                    <p><i class="fa-solid fa-phone me-2"></i>{{ current_user.phone or 'Не указан' }}</p>
-                    <p><i class="fa-solid fa-map-marker-alt me-2"></i>{{ order.shipping_address or 'Не указан' }}</p>
-                    
-                    {% if order.status == 'Pending' or order.status == 'Failed' %}
-                    <div class="d-grid mt-4">
-                        <a href="{{ url_for('pay_order', order_id=order.id) }}" class="btn btn-success">
-                            <i class="fa-solid fa-credit-card me-2"></i>Оплатить сейчас
-                        </a>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <strong>Дата:</strong> {{ order.created_at.strftime('%d.%m.%Y в %H:%M') }} |
+            <strong>Статус:</strong> <span class="badge bg-info">{{ order.status }}</span>
         </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5 class="card-title">Состав заказа</h5>
+                    <ul class="list-group list-group-flush">
+                        {% for item in order.items %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ item.product.name }} ({{ item.quantity }} шт.)
+                            <span>{{ "%.2f"|format(item.price * item.quantity) }} ₽</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="card-title">Сумма</h5>
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Сумма товаров:</span>
+                            <span>{{ "%.2f"|format(order.total_amount) }} ₽</span>
+                        </li>
+                        {% if order.discount_amount > 0 %}
+                        <li class="list-group-item d-flex justify-content-between text-success">
+                            <span>Скидка ({{ order.promo_code }}):</span>
+                            <span>- {{ "%.2f"|format(order.discount_amount) }} ₽</span>
+                        </li>
+                        {% endif %}
+                        <li class="list-group-item d-flex justify-content-between fw-bold h5">
+                            <span>Итого:</span>
+                            <span>{{ "%.2f"|format(order.final_amount) }} ₽</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <hr>
+            <p><strong>Адрес доставки:</strong> {{ order.shipping_address }}</p>
 
-        <!-- Состав заказа -->
-        <div class="col-lg-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">Состав заказа ({{ order.items | length }} позиций)</h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover align-middle mb-0">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th scope="col">Товар</th>
-                                    <th scope="col" class="text-center">Количество</th>
-                                    <th scope="col" class="text-end">Цена за ед.</th>
-                                    <th scope="col" class="text-end">Сумма</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for item in order.items %}
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <img src="{{ url_for('static', filename='images/' + item.product.image_url) }}" 
-                                                 alt="{{ item.product.name }}" 
-                                                 class="rounded" style="width: 50px; height: 50px; object-fit: cover;">
-                                            <div class="ms-3">
-                                                <a href="{{ url_for('product', product_id=item.product.id) }}" 
-                                                   class="text-decoration-none text-dark fw-bold">
-                                                    {{ item.product.name }}
-                                                </a>
-                                                <small class="text-muted d-block">{{ item.product.brand.name }}</small>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="text-center">{{ item.quantity }}</td>
-                                    <td class="text-end">{{ "{:,.2f}".format(item.price | float) | replace(",", " ") }} ₽</td>
-                                    <td class="text-end fw-bold">
-                                        {{ "{:,.2f}".format((item.price * item.quantity) | float) | replace(",", " ") }} ₽
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                            <tfoot class="table-light">
-                                <tr>
-                                    <td colspan="3" class="text-end h4 mb-0">ИТОГО:</td>
-                                    <td class="text-end h4 text-primary mb-0">
-                                        <strong>{{ "{:,.2f}".format(order.total_amount | float) | replace(",", " ") }} ₽</strong>
-                                    </td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            
-            {% if order.payment_id %}
-            <div class="alert alert-info mt-4">
-                <i class="fa-solid fa-info-circle me-2"></i>Идентификатор платежа YooKassa: 
-                <strong class="font-monospace">{{ order.payment_id }}</strong>
-            </div>
+            {% if order.status != 'Paid' %}
+            <a href="{{ url_for('cart_app.pay_order', order_id=order.id) }}" class="btn btn-success">
+                <i class="fa-solid fa-credit-card me-2"></i> Оплатить заказ
+            </a>
             {% endif %}
         </div>
     </div>

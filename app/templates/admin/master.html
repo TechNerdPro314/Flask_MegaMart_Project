@@ -3,19 +3,157 @@
 {% block head_css %}
   {{ super() }}
   <!-- Подключение кастомных стилей -->
-  <link rel="stylesheet" href="{{ url_for('admin_static', filename='css/admin.css') }}">
+  <link rel="stylesheet" href="{{ url_for('admin.static', filename='css/admin.css') }}">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Стили мобильной адаптации и анимаций теперь находятся в admin.css -->
 {% endblock %}
 
 {% block tail_js %}
   {{ super() }}
   <!-- Подключение кастомных скриптов -->
-  <script src="{{ url_for('admin_static', filename='js/admin.js') }}"></script>
+  <script src="{{ url_for('admin.static', filename='js/admin.js') }}"></script>
+
+  <!-- Дополнительные скрипты для мобильной адаптации и анимаций -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Мобильная навигация
+      const sidebar = document.querySelector('.sidebar');
+      const menuToggle = document.getElementById('menu-toggle');
+
+      if (menuToggle) {
+        // Добавляем кнопку для переключения боковой панели на мобильных устройствах
+        if (!document.getElementById('mobile-menu-toggle')) {
+          const toggleBtn = document.createElement('button');
+          toggleBtn.id = 'mobile-menu-toggle';
+          toggleBtn.className = 'btn btn-primary d-lg-none admin-touch-target';
+          toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
+          toggleBtn.style.position = 'fixed';
+          toggleBtn.style.top = '10px';
+          toggleBtn.style.left = '10px';
+          toggleBtn.style.zIndex = '1001';
+          toggleBtn.style.borderRadius = '50%';
+          toggleBtn.style.width = '50px';
+          toggleBtn.style.height = '50px';
+          toggleBtn.style.display = 'flex';
+          toggleBtn.style.alignItems = 'center';
+          toggleBtn.style.justifyContent = 'center';
+
+          toggleBtn.addEventListener('click', function() {
+            sidebar.classList.toggle('show');
+          });
+
+          document.body.appendChild(toggleBtn);
+        }
+      }
+
+      // Анимации при скролле
+      const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.1
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('admin-animate');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+
+      // Применяем к элементам админ панели
+      document.querySelectorAll('.card, .table, .form-control, .btn').forEach(el => {
+        if (!el.classList.contains('admin-animate')) {
+          el.classList.add('admin-animate');
+          observer.observe(el);
+        }
+      });
+
+      // Скрытие/показ навигации при скролле для мобильных
+      let lastScrollTop = 0;
+      const navbar = document.querySelector('.admin-navbar') || document.querySelector('.navbar');
+
+      if (navbar) {
+        window.addEventListener('scroll', function() {
+          let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+          if (scrollTop > lastScrollTop && scrollTop > 50) {
+            // Скроллим вниз - скрываем навигацию
+            navbar.classList.add('hidden');
+          } else {
+            // Скроллим вверх - показываем навигацию
+            navbar.classList.remove('hidden');
+          }
+          lastScrollTop = scrollTop;
+        });
+      }
+
+      // Адаптация для мобильных устройств
+      function handleAdminMobileAdaptations() {
+        const isMobile = window.innerWidth <= 992;
+
+        if (isMobile) {
+          // Добавляем классы для улучшения touch targets
+          document.querySelectorAll('button, a, input, select, textarea').forEach(el => {
+            if (!el.classList.contains('admin-touch-target') &&
+                !el.closest('.sidebar') &&
+                !el.classList.contains('btn-sm') &&
+                !el.classList.contains('btn-xs')) {
+              el.classList.add('admin-touch-target');
+            }
+          });
+        }
+      }
+
+      // Вызываем при загрузке и при изменении размера
+      handleAdminMobileAdaptations();
+      window.addEventListener('resize', handleAdminMobileAdaptations);
+
+      // Анимации для форм
+      document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function() {
+          this.classList.add('animate__animated', 'animate__zoomOut');
+        });
+      });
+
+      // Анимации для модальных окон
+      if (typeof $ !== 'undefined') {
+        $(document).on('shown.bs.modal', function() {
+          $('.modal-content').addClass('animate__animated animate__fadeInUp');
+        });
+      }
+    });
+
+    // Добавляем обработчик для бургер-меню на мобильных устройствах
+    document.addEventListener('click', function(e) {
+      const sidebar = document.querySelector('.sidebar');
+      const menuToggle = e.target.closest('#mobile-menu-toggle');
+
+      if (window.innerWidth <= 992) {
+        if (!e.target.closest('.sidebar') &&
+            !menuToggle &&
+            sidebar &&
+            sidebar.classList.contains('show')) {
+          sidebar.classList.remove('show');
+        }
+      }
+    });
+  </script>
 {% endblock %}
 
 {% block brand %}
   <span class="sidebar-brand">
     <i class="fas fa-store"></i> MegaMart Admin
   </span>
+{% endblock %}
+
+{% block page_header %}
+  {% if title %}
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom admin-animate">
+      <h1 class="h2">{{ title }}</h1>
+    </div>
+  {% endif %}
 {% endblock %}

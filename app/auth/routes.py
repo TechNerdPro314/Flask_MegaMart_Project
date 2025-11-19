@@ -1,35 +1,41 @@
 from flask import render_template, redirect, url_for, flash, request, current_app
 from flask_login import current_user, login_user, logout_user, login_required
-from app.models import User
-from app import db
+from app.models import User, Order
+from app import db, limiter
 from . import auth_bp
 from app.forms import LoginForm, RegisterForm, ProfileForm, ChangePasswordForm
 from app.cart.routes import (
     merge_session_cart_to_db,
-)  # Импорт функции из другого blueprint
+)
+from app.email import send_welcome_email
 
 
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
     if current_user.is_authenticated:
         return redirect(url_for("main.index"))
-
     form = RegisterForm()
-
     if form.validate_on_submit():
         new_user = User(email=form.email.data, name=form.name.data)
         new_user.set_password(form.password.data)
         db.session.add(new_user)
         db.session.commit()
+
+        # Отправляем приветственное письмо
+        send_welcome_email(new_user)
+
         login_user(new_user)
         merge_session_cart_to_db()
-        flash("Вы успешно зарегистрированы!", "success")
+        flash(
+            "Вы успешно зарегистрированы! На вашу почту отправлено приветственное письмо.",
+            "success",
+        )
         return redirect(url_for("main.index"))
-
     return render_template("register.html", title="Регистрация", form=form)
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
+@limiter.limit("10 per minute")
 def login():
     if current_user.is_authenticated:
         return redirect(url_for("main.index"))
@@ -67,7 +73,7 @@ def logout():
 @auth_bp.route("/profile")
 @login_required
 def profile():
-    orders = current_user.orders.order_by(db.desc("created_at")).all()
+    orders = Order.query.filter_by(user_id=current_user.id).order_by(db.desc(Order.created_at)).all()
     return render_template("profile.html", title="Личный кабинет", orders=orders)
 
 
@@ -125,6 +131,7 @@ def change_password():
 
 
 @auth_bp.route("/reset_password", methods=["GET", "POST"])
+@limiter.limit("5 per minute")
 def reset_request():
     if current_user.is_authenticated:
         return redirect(url_for("main.index"))
@@ -135,6 +142,7 @@ def reset_request():
         if user:
             token = user.get_reset_token()
             reset_url = url_for("auth.reset_token", token=token, _external=True)
+            # В реальном приложении здесь будет отправка email
             current_app.logger.info("-" * 50)
             current_app.logger.info(
                 f"СБРОС ПАРОЛЯ ДЛЯ {user.email}. ССЫЛКА: {reset_url}"
@@ -142,7 +150,7 @@ def reset_request():
             current_app.logger.info("-" * 50)
 
             flash(
-                "На ваш email отправлена инструкция по сбросу пароля (проверьте консоль).",
+                "На ваш email отправлена инструкция по сбросу пароля (в логах сервера).",
                 "info",
             )
         else:

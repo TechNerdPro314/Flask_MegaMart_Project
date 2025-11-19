@@ -30,10 +30,11 @@
                                     <div class="d-flex align-items-center">
                                         <img src="{{ url_for('static', filename='images/' + (item.product.first_image if current_user.is_authenticated else item.image_url) or 'default_product.png') }}"
                                             alt="{{ item.product.name if current_user.is_authenticated else item.name }}"
-                                            class="rounded" style="width: 60px; height: 60px; object-fit: cover;">
+                                            class="rounded" style="width: 60px; height: 60px; object-fit: cover;"
+                                            loading="lazy">
                                         <div class="ms-3">
                                             <h6 class="mb-0">
-                                                <a href="{{ url_for('main.product', product_id=item.product.id if current_user.is_authenticated else item.id) }}"
+                                                <a href="{% if item.product and item.product.slug %}{{ url_for('main.product', slug=item.product.slug) }}{% elif current_user.is_authenticated %}{{ url_for('main.product', product_id=item.product.id) }}{% else %}{{ url_for('main.product', product_id=item.id) }}{% endif %}"
                                                     class="text-decoration-none text-dark">
                                                     {{ item.product.name if current_user.is_authenticated else item.name
                                                     }}
@@ -57,8 +58,8 @@
                                         style="width: 80px;" value="{{ item.quantity }}" min="0"
                                         max="{{ item.product.in_stock }}" data-product-id="{{ item.product.id }}">
                                     {% else %}
-                                    <form action="{{ url_for('cart.update_cart', product_id=item.id) }}" method="POST"
-                                        class="d-inline-block">
+                                    <form action="{{ url_for('cart_app.update_cart', product_id=item.id) }}"
+                                        method="POST" class="d-inline-block">
                                         <input type="number" name="quantity" class="form-control form-control-sm"
                                             style="width: 80px;" value="{{ item.quantity }}" min="0" max="99"
                                             onchange="this.form.submit()">
@@ -77,7 +78,7 @@
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                     {% else %}
-                                    <a href="{{ url_for('cart.remove_from_cart', product_id=item.id) }}"
+                                    <a href="{{ url_for('cart_app.remove_from_cart', product_id=item.id) }}"
                                         class="btn btn-sm btn-link text-danger" title="Удалить">
                                         <i class="fa-solid fa-trash"></i>
                                     </a>
@@ -89,7 +90,6 @@
                     </table>
                 </div>
             </div>
-
             <div class="mt-3">
                 <a href="{{ url_for('main.catalog') }}" class="btn btn-outline-primary">
                     <i class="fa-solid fa-arrow-left me-2"></i>Продолжить покупки
@@ -100,38 +100,57 @@
         <!-- Итого и оформление -->
         <div class="col-lg-4">
             <div class="card shadow-sm sticky-top" style="top: 20px;">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Итого к оплате</h5>
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Сумма заказа</h5>
                 </div>
                 <div class="card-body">
-                    <div class="d-flex justify-content-between mb-3">
-                        <span>Товаров:</span>
-                        <span class="fw-bold">{{ cart_items|length }}</span>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Сумма товаров</span>
+                            <span>{{ "{:,.2f}".format(total_price|float) | replace(",", " ") }} ₽</span>
+                        </li>
+                        {% if discount_amount > 0 %}
+                        <li class="list-group-item d-flex justify-content-between text-success">
+                            <span>Скидка ({{ promo_code_info.code }})</span>
+                            <span>- {{ "{:,.2f}".format(discount_amount|float) | replace(",", " ") }} ₽</span>
+                        </li>
+                        {% endif %}
+                        <li class="list-group-item d-flex justify-content-between fw-bold h5">
+                            <span>Итого:</span>
+                            <span class="text-primary cart-total-price">{{ "{:,.2f}".format(final_price|float) |
+                                replace(",", " ") }} ₽</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body border-top">
+                    {% if promo_code_info %}
+                    <div class="text-center">
+                        <p class="mb-2">Применен промокод: <strong>{{ promo_code_info.code }}</strong></p>
+                        <a href="{{ url_for('cart_app.remove_promo') }}"
+                            class="btn btn-sm btn-outline-danger w-100">Удалить промокод</a>
                     </div>
-                    <div class="d-flex justify-content-between mb-3">
-                        <span>Общий вес:</span>
-                        <span>—</span>
-                    </div>
-                    <hr>
-                    <div class="d-flex justify-content-between mb-4">
-                        <span class="h5 mb-0">Итого:</span>
-                        <span class="h4 mb-0 text-primary cart-total-price">
-                            {{ "{:,.2f}".format(total_price|float) | replace(",", " ") }} ₽
-                        </span>
-                    </div>
-
+                    {% else %}
+                    <form action="{{ url_for('cart_app.apply_promo') }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <div class="input-group">
+                            <input type="text" name="promo_code" class="form-control" placeholder="Промокод" required>
+                            <button type="submit" class="btn btn-secondary">Применить</button>
+                        </div>
+                    </form>
+                    {% endif %}
+                </div>
+                <div class="card-footer p-3">
                     {% if current_user.is_authenticated %}
-                    <a href="{{ url_for('cart.checkout') }}"
+                    <a href="{{ url_for('cart_app.checkout') }}"
                         class="btn btn-success btn-lg w-100 {{ 'disabled' if not cart_items else '' }}">
                         <i class="fa-solid fa-credit-card me-2"></i>Перейти к оформлению
                     </a>
                     {% else %}
-                    <div class="alert alert-warning">
-                        <i class="fa-solid fa-info-circle me-2"></i>Для оформления заказа необходимо войти
+                    <div class="alert alert-warning small p-2">
+                        <i class="fa-solid fa-info-circle me-1"></i>Для оформления заказа необходимо <a
+                            href="{{ url_for('auth.login', next=url_for('cart_app.cart_view')) }}"
+                            class="alert-link">войти</a>.
                     </div>
-                    <a href="{{ url_for('auth.login', next=url_for('cart.cart_view')) }}" class="btn btn-primary w-100">
-                        <i class="fa-solid fa-right-to-bracket me-2"></i>Войти
-                    </a>
                     {% endif %}
                 </div>
             </div>

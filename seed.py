@@ -78,11 +78,11 @@ for category_name, products in product_names.items():
 
 try:
     db.session.commit()
-    print("✅ Данные успешно созданы!")
+    print("Данные успешно созданы!")
     print(f"  Админ: admin@megamart.ru / admin123")
     print(f"  Товаров: {Product.query.count()}")
     print(f"  Категорий: {Category.query.count()}")
     print(f"  Брендов: {Brand.query.count()}")
 except Exception as e:
     db.session.rollback()
-    print(f"❌ Ошибка: {e}")
+    print(f"Ошибка: {e}")

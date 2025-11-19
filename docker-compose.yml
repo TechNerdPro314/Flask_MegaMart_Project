@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  # Сервис веб-приложения Flask
+  web:
+    build: .
+    command: waitress-serve --host 0.0.0.0 --port 8000 run:app
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+
+  # Сервис базы данных MySQL
+  db:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  # Сервис Redis для Celery и кэширования
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  # Сервис для фоновых задач Celery
+  worker:
+    build: .
+    command: celery -A celery_worker.celery worker --loglevel=info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - db
+
+volumes:
+  mysql_data:

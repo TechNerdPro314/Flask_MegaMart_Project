@@ -5,13 +5,13 @@ function toggleTheme() {
     const body = document.body;
     const currentTheme = localStorage.getItem('adminTheme') || 'light';
     const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-    
+
     if (newTheme === 'dark') {
         body.classList.add('dark-theme');
     } else {
         body.classList.remove('dark-theme');
     }
-    
+
     localStorage.setItem('adminTheme', newTheme);
     updateThemeIcon(newTheme);
 }
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (savedTheme === 'dark') {
         document.body.classList.add('dark-theme');
     }
-    
+
     // Добавление кнопки переключения темы
     const toggleBtn = document.createElement('button');
     toggleBtn.className = 'theme-toggle';

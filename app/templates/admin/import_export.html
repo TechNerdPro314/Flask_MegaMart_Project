@@ -1,0 +1,42 @@
+{% extends 'admin/master.html' %}
+{% block body %}
+<h1>Импорт и Экспорт товаров</h1>
+<hr>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Экспорт товаров в CSV</h3>
+            </div>
+            <div class="card-body">
+                <p>Нажмите на кнопку ниже, чтобы скачать CSV-файл со всеми товарами из вашего каталога. Этот файл можно
+                    использовать как шаблон для импорта.</p>
+                <a href="{{ url_for('.export') }}" class="btn btn-primary">
+                    <i class="fa fa-download me-1"></i> Экспортировать все товары
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Импорт товаров из CSV</h3>
+            </div>
+            <div class="card-body">
+                <p>Выберите CSV-файл для загрузки. Система обновит существующие товары (по `id`) или создаст новые, если
+                    `id` не указан или не найден.</p>
+                <form action="{{ url_for('.import_csv') }}" method="post" enctype="multipart/form-data">
+                    <div class="form-group mb-3">
+                        <label for="file" class="form-label">CSV Файл</label>
+                        <input type="file" name="file" id="file" class="form-control" accept=".csv" required>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fa fa-upload me-1"></i> Загрузить и импортировать
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

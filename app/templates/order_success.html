@@ -5,40 +5,53 @@
 {% block content %}
 <div class="container my-5">
     <div class="row justify-content-center">
-        <div class="col-md-6">
+        <div class="col-lg-6">
             <div class="card shadow-sm text-center">
-                <div class="card-body p-5">
+                <div class="card-body py-5">
                     {% if order.status == 'Paid' %}
-                        <i class="fa-solid fa-check-circle text-success fa-5x mb-4"></i>
-                        <h2 class="text-success mb-3">Заказ успешно оплачен!</h2>
+                    <div class="text-success mb-4">
+                        <i class="fa-solid fa-circle-check fa-5x"></i>
+                    </div>
+                    <h2 class="text-success mb-3">Заказ успешно оплачен!</h2>
+                    <p class="lead mb-4">Спасибо за ваш заказ! Мы уже начали его обработку.</p>
                     {% elif order.status == 'Failed' %}
-                        <i class="fa-solid fa-times-circle text-danger fa-5x mb-4"></i>
-                        <h2 class="text-danger mb-3">Ошибка оплаты</h2>
+                    <div class="text-danger mb-4">
+                        <i class="fa-solid fa-circle-xmark fa-5x"></i>
+                    </div>
+                    <h2 class="text-danger mb-3">Ошибка оплаты</h2>
+                    <p class="lead mb-4">При обработке платежа произошла ошибка. Пожалуйста, попробуйте еще раз.</p>
                     {% else %}
-                        <i class="fa-solid fa-clock text-warning fa-5x mb-4"></i>
-                        <h2 class="text-warning mb-3">Платеж в обработке</h2>
+                    <div class="text-warning mb-4">
+                        <i class="fa-solid fa-clock fa-5x"></i>
+                    </div>
+                    <h2 class="text-warning mb-3">Платеж обрабатывается</h2>
+                    <p class="lead mb-4">Ваш платеж находится в обработке. Статус заказа будет обновлен в ближайшее
+                        время.</p>
                     {% endif %}
-                    
-                    <p class="h4 mb-3">
-                        Сумма: <strong>{{ "{:,.2f}".format(order.total_amount | float) | replace(",", " ") }} ₽</strong>
-                    </p>
-                    
-                    <p class="text-muted">
-                        {% if order.status == 'Paid' %}
-                            Ваш заказ #{{ order.id }} успешно оплачен и передан в обработку.
-                        {% elif order.status == 'Failed' %}
-                            Платеж по заказу #{{ order.id }} не прошел. Попробуйте еще раз.
-                        {% else %}
-                            Статус заказа #{{ order.id }} скоро обновится после проверки платежа.
-                        {% endif %}
-                    </p>
-                    
-                    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mt-4">
-                        <a href="{{ url_for('profile') }}" class="btn btn-primary btn-lg px-4">
-                            <i class="fa-solid fa-user me-2"></i>Личный кабинет
+
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h5>Информация о заказе</h5>
+                            <p class="mb-1"><strong>Номер заказа:</strong> #{{ order.id }}</p>
+                            <p class="mb-1"><strong>Сумма:</strong> {{ "%.2f"|format(order.total_amount) }} ₽</p>
+                            <p class="mb-0"><strong>Статус:</strong>
+                                {% if order.status == 'Paid' %}
+                                <span class="badge bg-success">Оплачен</span>
+                                {% elif order.status == 'Pending' %}
+                                <span class="badge bg-warning">Ожидает оплаты</span>
+                                {% else %}
+                                <span class="badge bg-danger">{{ order.status }}</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{{ url_for('auth.profile') }}" class="btn btn-primary me-md-2">
+                            <i class="fa-solid fa-list me-1"></i> Мои заказы
                         </a>
-                        <a href="{{ url_for('catalog') }}" class="btn btn-outline-secondary btn-lg px-4">
-                            <i class="fa-solid fa-arrow-left me-2"></i>В каталог
+                        <a href="{{ url_for('main.catalog') }}" class="btn btn-outline-primary">
+                            <i class="fa-solid fa-shopping-cart me-1"></i> Продолжить покупки
                         </a>
                     </div>
                 </div>

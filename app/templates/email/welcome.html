@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Добро пожаловать в MegaMart!</title>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Здравствуйте, {{ user.name }}!</h2>
+
+        {% if password %}
+        <p>Спасибо за ваш первый заказ! Для вашего удобства мы создали аккаунт в магазине <strong>MegaMart</strong>.</p>
+        <p>Вы можете войти в него, чтобы отслеживать статус заказа, просматривать историю покупок и многое другое. Ваши
+            данные для входа:</p>
+        <ul>
+            <li><strong>Email:</strong> {{ user.email }}</li>
+            <li><strong>Временный пароль:</strong> <code>{{ password }}</code></li>
+        </ul>
+        <p>После первого входа настоятельно рекомендуем <a
+                href="{{ url_for('auth.change_password', _external=True) }}">сменить пароль</a> в личном кабинете.</p>
+        {% else %}
+        <p>Спасибо за регистрацию в нашем интернет-магазине сантехники <strong>MegaMart</strong>.</p>
+        <p>Мы рады, что вы с нами! Теперь вы можете отслеживать свои заказы, добавлять товары в избранное и многое
+            другое.</p>
+        {% endif %}
+
+        <p style="margin-top: 25px;">
+            <a href="{{ url_for('main.catalog', _external=True) }}" class="button">Перейти в каталог</a>
+        </p>
+        <hr style="margin-top: 30px;">
+        <p style="color: #6c757d; font-size: 0.8em;">Это письмо сгенерировано автоматически, пожалуйста, не отвечайте на
+            него.</p>
+    </div>
+</body>
+
+</html>

@@ -1,31 +1,37 @@
-from flask import jsonify, request
+from flask import jsonify, request, url_for, current_app
 from flask_login import login_required, current_user
 from app.models import Product, Cart
 from app import db
 from . import api_bp
+from .schemas import (
+    CartAddItemSchema,
+    CartRemoveItemSchema,
+    CartUpdateItemSchema,
+    WishlistItemSchema,
+)
 
 
 @api_bp.route("/cart/add", methods=["POST"])
 @login_required
 def api_add_to_cart():
     """AJAX: Добавить товар в корзину"""
-    try:
-        data = request.get_json()
-        product_id = int(data.get("product_id"))
-        quantity = int(data.get("quantity", 1))
+    data = request.get_json()
+    schema = CartAddItemSchema()
+    errors = schema.validate(data)
+    if errors:
+        return jsonify({"success": False, "error": errors}), 400
 
-        if quantity <= 0:
-            return jsonify({"success": False, "error": "Неверное количество"}), 400
+    try:
+        product_id = data["product_id"]
+        quantity = data["quantity"]
 
         product = Product.query.get_or_404(product_id)
-
         if product.in_stock < quantity:
             return jsonify({"success": False, "error": "Нет в наличии"}), 400
 
         cart_item = Cart.query.filter_by(
             user_id=current_user.id, product_id=product_id
         ).first()
-
         if cart_item:
             cart_item.quantity += quantity
         else:
@@ -35,7 +41,6 @@ def api_add_to_cart():
             db.session.add(cart_item)
 
         db.session.commit()
-
         cart_count = sum(item.quantity for item in current_user.cart_items.all())
         return jsonify(
             {
@@ -47,17 +52,22 @@ def api_add_to_cart():
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({"success": False, "error": str(e)}), 500
+        current_app.logger.error(f"Error in api_add_to_cart: {e}")
+        return jsonify({"success": False, "error": "Internal server error"}), 500
 
 
 @api_bp.route("/cart/remove", methods=["POST"])
 @login_required
 def api_remove_from_cart():
     """AJAX: Удалить товар из корзины"""
-    try:
-        data = request.get_json()
-        product_id = int(data.get("product_id"))
+    data = request.get_json()
+    schema = CartRemoveItemSchema()
+    errors = schema.validate(data)
+    if errors:
+        return jsonify({"success": False, "error": errors}), 400
 
+    try:
+        product_id = data["product_id"]
         cart_item = Cart.query.filter_by(
             user_id=current_user.id, product_id=product_id
         ).first()
@@ -71,26 +81,30 @@ def api_remove_from_cart():
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({"success": False, "error": str(e)}), 500
+        current_app.logger.error(f"Error in api_remove_from_cart: {e}")
+        return jsonify({"success": False, "error": "Internal server error"}), 500
 
 
 @api_bp.route("/cart/update", methods=["POST"])
 @login_required
 def api_update_cart():
     """AJAX: Обновить количество товара"""
+    data = request.get_json()
+    schema = CartUpdateItemSchema()
+    errors = schema.validate(data)
+    if errors:
+        return jsonify({"success": False, "error": errors}), 400
+
     try:
-        data = request.get_json()
-        product_id = int(data.get("product_id"))
-        quantity = int(data.get("quantity"))
+        product_id = data["product_id"]
+        quantity = data["quantity"]
 
         if quantity <= 0:
-            # Если количество 0 или меньше, удаляем товар
             cart_item = Cart.query.filter_by(
                 user_id=current_user.id, product_id=product_id
             ).first()
             if cart_item:
                 db.session.delete(cart_item)
-                db.session.commit()
         else:
             product = Product.query.get_or_404(product_id)
             if product.in_stock < quantity:
@@ -101,7 +115,13 @@ def api_update_cart():
             ).first()
             if cart_item:
                 cart_item.quantity = quantity
-                db.session.commit()
+            else:
+                cart_item = Cart(
+                    user_id=current_user.id, product_id=product_id, quantity=quantity
+                )
+                db.session.add(cart_item)
+
+        db.session.commit()
 
         total_price = sum(
             item.product.price * item.quantity for item in current_user.cart_items.all()
@@ -118,4 +138,58 @@ def api_update_cart():
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({"success": False, "error": str(e)}), 500
+        current_app.logger.error(f"Error in api_update_cart: {e}")
+        return jsonify({"success": False, "error": "Internal server error"}), 500
+
+
+@api_bp.route("/search/autocomplete")
+def autocomplete():
+    """AJAX: Получить подсказки для поиска"""
+    query = request.args.get("q", "").strip()
+    if len(query) < 2:
+        return jsonify([])
+
+    products = Product.query.filter(Product.name.ilike(f"%{query}%")).limit(5).all()
+    results = [
+        {"name": p.name, "url": url_for("main.product", product_id=p.id)}
+        for p in products
+    ]
+    return jsonify(results)
+
+
+@api_bp.route("/wishlist/toggle", methods=["POST"])
+@login_required
+def toggle_wishlist():
+    """AJAX: Добавить или удалить товар из списка желаний"""
+    data = request.get_json()
+    schema = WishlistItemSchema()
+    errors = schema.validate(data)
+    if errors:
+        return jsonify({"success": False, "error": errors}), 400
+
+    product_id = data.get("product_id")
+    product = Product.query.get_or_404(product_id)
+
+    is_in_wishlist = current_user.wishlist.filter_by(id=product_id).first()
+
+    try:
+        if is_in_wishlist:
+            current_user.wishlist.remove(product)
+            db.session.commit()
+            return jsonify(
+                {
+                    "success": True,
+                    "action": "removed",
+                    "message": "Удалено из избранного",
+                }
+            )
+        else:
+            current_user.wishlist.append(product)
+            db.session.commit()
+            return jsonify(
+                {"success": True, "action": "added", "message": "Добавлено в избранное"}
+            )
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error in toggle_wishlist: {e}")
+        return jsonify({"success": False, "error": "Internal server error"}), 500

@@ -6,143 +6,110 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ title }} - MegaMart</title>
-
+    <meta name="description"
+        content="{{ meta_description or 'Интернет-магазин сантехники MegaMart: широкий выбор, гарантия качества, доставка по всей России.' }}">
+    <!-- Open Graph -->
+    <meta property="og:title" content="{{ title }} - MegaMart">
+    <meta property="og:description"
+        content="{{ meta_description or 'Лучшая сантехника для вашего дома от ведущих брендов.' }}">
+    <meta property="og:image"
+        content="{{ meta_image or url_for('static', filename='images/og_image.png', _external=True) }}">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="MegaMart">
+    <!-- PWA -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#0d6efd">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-
-    <!-- НАШ CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- НАШ CSS (через Flask-Assets) -->
+    {% assets "css_all" %}
+    <link rel="stylesheet" href="{{ ASSET_URL }}">{% endassets %}
 </head>
 
-<body>
-
+<body data-sw-url="{{ url_for('main.service_worker') }}">
     <header>
         <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
             <div class="container-fluid container">
-
-                <!-- Логотип -->
-                <a class="navbar-brand" href="{{ url_for('main.index') }}">
-                    <i class="fa-solid fa-water-ladder me-2"></i> MegaMart
-                </a>
-
-                <!-- Мобильное меню -->
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-
-                <!-- Меню -->
+                <a class="navbar-brand" href="{{ url_for('main.index') }}"><i class="fa-solid fa-water-ladder me-2"></i>
+                    MegaMart</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span
+                        class="navbar-toggler-icon"></span></button>
                 <div class="collapse navbar-collapse" id="navbarNav">
-
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('main.catalog') }}">Каталог товаров</a>
-                        </li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('main.catalog') }}">Каталог
+                                товаров</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('main.track_order') }}">Отследить
+                                заказ</a></li>
                     </ul>
-
-                    <!-- Поиск -->
-                    <form class="d-flex mx-lg-4 my-2 my-lg-0" method="GET" action="{{ url_for('main.catalog') }}">
+                    <form class="d-flex mx-lg-4 my-2 my-lg-0 position-relative" method="GET"
+                        action="{{ url_for('main.catalog') }}" id="search-form">
                         <input class="form-control me-2" type="search" placeholder="Поиск по сантехнике"
-                            name="search_query" value="{{ request.args.get('search_query', '') }}">
+                            name="search_query" id="search-input" value="{{ request.args.get('search_query', '') }}"
+                            autocomplete="off">
                         <button class="btn btn-outline-primary" type="submit">Поиск</button>
+                        <div id="autocomplete-container"></div>
                     </form>
-
                     <ul class="navbar-nav d-flex align-items-center">
-
-                        <!-- Корзина -->
-                        <li class="nav-item">
-                            <!-- ИСПРАВЛЕНО: обновлена ссылка на переименованный blueprint -->
-                            <a class="nav-link" href="{{ url_for('cart_app.cart_view') }}">
-                                <i class="fa-solid fa-cart-shopping"></i> Корзина
-                                {% set cart_count = current_user.cart_items.count() if current_user.is_authenticated
-                                else (session['cart']|length if 'cart' in session else 0) %}
-                                <span class="badge bg-danger rounded-pill cart-count" {% if cart_count==0
-                                    %}style="display: none;" {% endif %}>
-                                    {{ cart_count }}
-                                </span>
-                            </a>
-                        </li>
-
-                        <!-- Профиль -->
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('cart_app.cart_view') }}"><i
+                                    class="fa-solid fa-cart-shopping"></i> Корзина{% set cart_count =
+                                current_user.cart_items.count() if current_user.is_authenticated else
+                                (session['cart']|length if 'cart' in session else 0) %}<span
+                                    class="badge bg-danger rounded-pill cart-count" {% if cart_count==0
+                                    %}style="display: none;" {% endif %}>{{ cart_count }}</span></a></li>
                         <li class="nav-item dropdown">
-                            {% if current_user.is_authenticated %}
-                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                                <i class="fa-solid fa-user"></i> {{ current_user.name or 'Профиль' }}
-                            </a>
+                            {% if current_user.is_authenticated %}<a class="nav-link dropdown-toggle" href="#"
+                                data-bs-toggle="dropdown"><i class="fa-solid fa-user"></i> {{ current_user.name or
+                                'Профиль' }}</a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}">Личный кабинет</a>
                                 </li>
-                                {% if current_user.is_admin %}
-                                <li><a class="dropdown-item text-danger"
-                                        href="{{ url_for('admin.index') }}">Админ-панель</a></li>
-                                {% endif %}
+                                {% if current_user.is_admin %}<li><a class="dropdown-item text-danger"
+                                        href="{{ url_for('admin.index') }}">Админ-панель</a></li>{% endif %}
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
                                 <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Выход</a></li>
                             </ul>
-                            {% else %}
-                            <a class="nav-link" href="{{ url_for('auth.login') }}">
-                                <i class="fa-solid fa-right-to-bracket"></i> Войти
-                            </a>
-                            {% endif %}
+                            {% else %}<a class="nav-link" href="{{ url_for('auth.login') }}"><i
+                                    class="fa-solid fa-right-to-bracket"></i> Войти</a>{% endif %}
                         </li>
-
-                        <!-- ПЕРЕКЛЮЧАТЕЛЬ ТЕМЫ -->
-                        <li class="nav-item">
-                            <button id="theme-toggle" class="btn btn-link nav-link" title="Сменить тему">
-                                <i class="fa-solid fa-moon" id="theme-icon"></i>
-                            </button>
-                        </li>
+                        <li class="nav-item"><button id="theme-toggle" class="btn btn-link nav-link"
+                                title="Сменить тему" aria-label="Сменить тему"><i class="fa-solid fa-moon"
+                                    id="theme-icon"></i></button></li>
                     </ul>
                 </div>
             </div>
         </nav>
     </header>
-
     <main class="py-4">
         <div class="container">
-            <!-- Flash-сообщения -->
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-            {% for category, message in messages %}
-            <div class="alert alert-{{ category }} alert-dismissible fade show mb-4" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-            {% endfor %}
-            {% endif %}
-            {% endwith %}
-
-            <!-- Контент -->
+            {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for category, message in
+            messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show mb-4" role="alert">{{ message }}<button
+                    type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button></div>
+            {% endfor %}{% endif %}{% endwith %}
             {% block content %}{% endblock %}
         </div>
     </main>
-
     <footer class="footer mt-auto py-3 bg-body-tertiary">
         <div class="container">
             <div class="row">
                 <div class="col-md-4 mb-3">
                     <h5 class="text-primary">MegaMart</h5>
-                    <p class="text-muted">
-                        Ваш надежный поставщик сантехники.<br>
-                        Сделано с Flask и любовью.
-                    </p>
+                    <p class="text-muted">Ваш надежный поставщик сантехники.<br>Сделано с Flask и любовью.</p>
                 </div>
-
                 <div class="col-md-4 mb-3">
                     <h5>Разделы</h5>
                     <ul class="list-unstyled">
                         <li><a href="{{ url_for('main.index') }}" class="text-muted">Главная</a></li>
                         <li><a href="{{ url_for('main.catalog') }}" class="text-muted">Каталог</a></li>
-                        <!-- ИСПРАВЛЕНО: обновлена ссылка на переименованный blueprint -->
                         <li><a href="{{ url_for('cart_app.cart_view') }}" class="text-muted">Корзина</a></li>
                         <li><a href="{{ url_for('auth.profile') }}" class="text-muted">Профиль</a></li>
                     </ul>
                 </div>
-
                 <div class="col-md-4 mb-3">
                     <h5>Информация</h5>
                     <ul class="list-unstyled">
@@ -152,20 +119,21 @@
                     </ul>
                 </div>
             </div>
-
-            <div class="text-center mt-3 border-top pt-3">
-                <small class="text-muted">&copy; {{ now().year }} MegaMart. Все права защищены.</small>
-            </div>
+            <div class="text-center mt-3 border-top pt-3"><small class="text-muted">&copy; {{ now().year }} MegaMart.
+                    Все права защищены.</small></div>
         </div>
     </footer>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- НАШИ JS -->
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
+    {% assets "js_all" %}
+    <script type="text/javascript" src="{{ ASSET_URL }}" defer></script>{% endassets %}
+    {% if config.GOOGLE_ANALYTICS_ID %}
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ config.GOOGLE_ANALYTICS_ID }}"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', '{{ config.GOOGLE_ANALYTICS_ID }}');
+    </script>{% endif %}
 </body>
 
 </html>

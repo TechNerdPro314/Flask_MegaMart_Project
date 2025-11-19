@@ -1,4 +1,5 @@
 admin@megamart.com
 supersecret123
 
-waitress-serve --host 0.0.0.0 --port 8000 app:create_app
+flask db migrate -m "Add wishlist and reviews"
+flask db upgrade
