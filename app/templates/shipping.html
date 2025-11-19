@@ -3,64 +3,151 @@
 {% block title %}Доставка и возврат{% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    <div class="row">
-        <div class="col-lg-10 offset-lg-1">
-            <div class="text-center mb-5">
-                <h2 class="display-5 fw-bold text-primary mb-4">Доставка и условия возврата</h2>
-                <p class="lead fs-4">
+<!-- Hero Section -->
+<section class="hero-section bg-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="hero-title display-4 fw-bold mb-3 animate__animated animate__fadeInUp">Доставка и возврат</h1>
+                <p class="hero-subtitle fs-4 mb-0 animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
                     Мы заботимся о том, чтобы ваш заказ был доставлен быстро и безопасно
                 </p>
             </div>
+        </div>
+    </div>
+</section>
 
-            <div class="row g-4 mb-5">
-                <div class="col-md-6">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-header bg-primary text-white">
-                            <h4 class="mb-0"><i class="fa-solid fa-truck me-2"></i> Доставка</h4>
-                        </div>
-                        <div class="card-body p-4">
+<!-- Main Content -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <div class="row g-5 mb-5">
+                    <div class="col-md-6">
+                        <div class="shipping-card p-5 h-100 shadow-sm rounded-3">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="shipping-icon bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                    <i class="fa-solid fa-truck text-white fa-2x"></i>
+                                </div>
+                                <h3 class="mb-0 fw-bold">Доставка</h3>
+                            </div>
                             <p class="fs-5">Мы осуществляем доставку по всей территории Российской Федерации.</p>
-                            <ul class="list-unstyled">
-                                <li class="mb-3 pb-3 border-bottom">
-                                    <strong>Москва и МО:</strong> Курьером 1-2 дня. 400 ₽ (бесплатно от 15 000 ₽)
-                                </li>
-                                <li class="mb-3 pb-3 border-bottom">
-                                    <strong>Регионы РФ:</strong> ТК СДЭК, Деловые Линии. 3-7 дней, цена по тарифам
-                                </li>
-                                <li class="mb-0">
-                                    <strong>Самовывоз:</strong> Из склада в Москве по предварительной договоренности
-                                </li>
-                            </ul>
+                            <div class="shipping-details">
+                                <div class="shipping-item d-flex justify-content-between border-bottom pb-3 mb-3">
+                                    <div>
+                                        <h5 class="fw-bold">Москва и МО</h5>
+                                        <p class="mb-0 text-muted">Курьером 1-2 дня</p>
+                                    </div>
+                                    <div class="text-end">
+                                        <p class="mb-0 fw-bold">400 ₽</p>
+                                        <p class="mb-0 text-success">Бесплатно от 15 000 ₽</p>
+                                    </div>
+                                </div>
+                                <div class="shipping-item d-flex justify-content-between border-bottom pb-3 mb-3">
+                                    <div>
+                                        <h5 class="fw-bold">Регионы РФ</h5>
+                                        <p class="mb-0 text-muted">ТК СДЭК, Деловые Линии</p>
+                                    </div>
+                                    <div class="text-end">
+                                        <p class="mb-0 fw-bold">3-7 дней</p>
+                                        <p class="mb-0 text-muted">По тарифам ТК</p>
+                                    </div>
+                                </div>
+                                <div class="shipping-item d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="fw-bold">Самовывоз</h5>
+                                        <p class="mb-0 text-muted">Из склада в Москве</p>
+                                    </div>
+                                    <div class="text-end">
+                                        <p class="mb-0 fw-bold">Бесплатно</p>
+                                        <p class="mb-0 text-muted">По предзаказу</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="col-md-6">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-header bg-success text-white">
-                            <h4 class="mb-0"><i class="fa-solid fa-right-left me-2"></i> Возврат</h4>
-                        </div>
-                        <div class="card-body p-4">
+                    <div class="col-md-6">
+                        <div class="return-card p-5 h-100 shadow-sm rounded-3">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="return-icon bg-success rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                    <i class="fa-solid fa-right-left text-white fa-2x"></i>
+                                </div>
+                                <h3 class="mb-0 fw-bold">Возврат</h3>
+                            </div>
                             <p class="mb-3 fs-5">Возврат товара надлежащего качества в течение <strong>14 дней</strong> с момента получения:</p>
-                            <ul>
-                                <li class="mb-2">Товар не был в употреблении</li>
-                                <li class="mb-2">Сохранены упаковка, пломбы, ярлыки</li>
-                                <li class="mb-2">Есть чек или товарная накладная</li>
+                            <ul class="return-conditions list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fa-solid fa-check-circle text-success me-2"></i>
+                                    Товар не был в употреблении
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fa-solid fa-check-circle text-success me-2"></i>
+                                    Сохранены упаковка, пломбы, ярлыки
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fa-solid fa-check-circle text-success me-2"></i>
+                                    Есть чек или товарная накладная
+                                </li>
                             </ul>
-                            <div class="alert alert-danger mt-3">
+                            <div class="alert alert-danger mt-4">
+                                <i class="fa-solid fa-exclamation-triangle me-2"></i>
                                 <strong>Важно!</strong> Возврат технически сложных или поврежденных товаров не производится
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="alert alert-info text-center">
-                <i class="fa-solid fa-info-circle fa-2x mb-2 d-block opacity-75"></i>
-                <p class="mb-0 fs-5">По вопросам доставки и возврата обращайтесь в поддержку: <strong>+7 (495) 123-45-67</strong></p>
+
+                <div class="faq-section bg-light rounded-3 p-5 mb-5">
+                    <h3 class="fw-bold mb-4">Часто задаваемые вопросы</h3>
+                    <div class="accordion" id="shippingFaq">
+                        <div class="accordion-item">
+                            <h4 class="accordion-header" id="faq1">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1" aria-expanded="false" aria-controls="collapse1">
+                                    Как отследить статус доставки?
+                                </button>
+                            </h4>
+                            <div id="collapse1" class="accordion-collapse collapse" aria-labelledby="faq1" data-bs-parent="#shippingFaq">
+                                <div class="accordion-body">
+                                    После отправки заказа вы получите трек-номер для отслеживания. Также вы можете отследить заказ в разделе "Мои заказы" в личном кабинете.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h4 class="accordion-header" id="faq2">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2" aria-expanded="false" aria-controls="collapse2">
+                                    Можно ли изменить адрес доставки?
+                                </button>
+                            </h4>
+                            <div id="collapse2" class="accordion-collapse collapse" aria-labelledby="faq2" data-bs-parent="#shippingFaq">
+                                <div class="accordion-body">
+                                    Да, вы можете изменить адрес доставки до отправки заказа. Для этого свяжитесь с нами по телефону или через личный кабинет.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h4 class="accordion-header" id="faq3">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3" aria-expanded="false" aria-controls="collapse3">
+                                    Сколько стоит возврат товара?
+                                </button>
+                            </h4>
+                            <div id="collapse3" class="accordion-collapse collapse" aria-labelledby="faq3" data-bs-parent="#shippingFaq">
+                                <div class="accordion-body">
+                                    Возврат товара надлежащего качества осуществляется за наш счёт. Для возврата ненадлежащего качества условия рассмотрения индивидуально.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="support-card text-center p-5 bg-primary text-white rounded-3">
+                    <i class="fa-solid fa-headset fa-3x mb-3"></i>
+                    <h3 class="fw-bold mb-3">Нужна помощь?</h3>
+                    <p class="mb-0 fs-5">По вопросам доставки и возврата обращайтесь в поддержку:</p>
+                    <p class="mb-0 fs-2 fw-bold">+7 (495) 123-45-67</p>
+                </div>
             </div>
         </div>
     </div>
-</div>
+</section>
 {% endblock %}

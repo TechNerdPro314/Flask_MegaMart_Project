@@ -3,69 +3,117 @@
 {% block title %}О нас{% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    <div class="row">
-        <div class="col-lg-8 offset-lg-2">
-            <div class="text-center mb-5">
-                <h2 class="display-5 fw-bold text-primary mb-4">О компании MegaMart</h2>
-                <p class="lead fs-4">
-                    MegaMart — это ваш надежный партнер в мире качественной сантехники.
+<!-- Hero Section -->
+<section class="hero-section bg-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="hero-title display-4 fw-bold mb-3 animate__animated animate__fadeInUp">О компании MegaMart</h1>
+                <p class="hero-subtitle fs-4 mb-0 animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
+                    Ваш надежный партнер в мире качественной сантехники
                 </p>
             </div>
-            
-            <div class="card shadow-sm mb-4">
-                <div class="card-body p-5">
-                    <h4 class="mb-4 text-primary"><i class="fa-solid fa-bullseye me-2"></i>Наша миссия</h4>
-                    <p class="fs-5">
-                        Мы стремимся сделать процесс выбора и покупки сантехники максимально простым и удобным. Наша миссия — предложить клиентам продукцию, которая сочетает в себе <strong>инновационный дизайн, долговечность и доступную цену</strong>. Мы тщательно отбираем бренды, чтобы гарантировать высочайшее качество каждого товара.
-                    </p>
-                </div>
-            </div>
+        </div>
+    </div>
+</section>
 
-            <div class="card shadow-sm">
-                <div class="card-body p-5">
-                    <h4 class="mb-4 text-success"><i class="fa-solid fa-star me-2"></i>Наши преимущества</h4>
-                    <div class="row g-4">
-                        <div class="col-md-6">
-                            <div class="d-flex align-items-start">
-                                <i class="fa-solid fa-check-circle text-success fa-2x me-3 mt-1"></i>
-                                <div>
-                                    <h5>Широкий ассортимент</h5>
-                                    <p class="text-muted">От классических смесителей до современных душевых систем</p>
-                                </div>
-                            </div>
+<!-- Main Content -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <div class="row align-items-center mb-5">
+                    <div class="col-md-6 mb-4 mb-md-0">
+                        <div class="about-image-placeholder bg-light rounded p-4 d-flex align-items-center justify-content-center" style="height: 350px;">
+                            <i class="fas fa-bath fa-10x text-primary opacity-25"></i>
                         </div>
-                        <div class="col-md-6">
-                            <div class="d-flex align-items-start">
-                                <i class="fa-solid fa-check-circle text-success fa-2x me-3 mt-1"></i>
-                                <div>
-                                    <h5>Гарантия качества</h5>
-                                    <p class="text-muted">Работаем только с проверенными производителями</p>
-                                </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h2 class="fw-bold mb-4">Наша история</h2>
+                        <p class="lead">
+                            MegaMart начала свой путь в 2010 году с небольшого магазина сантехники в центре Москвы.
+                        </p>
+                        <p>
+                            За прошедшие годы мы выросли в крупнейшую сеть по продаже сантехники и сопутствующих товаров в России,
+                            объединяющую более 50 магазинов и обслуживающую десятки тысяч клиентов каждый месяц.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm mb-5 border-0">
+                    <div class="card-body p-5">
+                        <h3 class="mb-4 text-primary"><i class="fa-solid fa-bullseye me-2"></i>Наша миссия</h3>
+                        <p class="fs-5">
+                            Мы стремимся сделать процесс выбора и покупки сантехники максимально простым и удобным.
+                            Наша миссия — предложить клиентам продукцию, которая сочетает в себе
+                            <strong>инновационный дизайн, долговечность и доступную цену</strong>.
+                            Мы тщательно отбираем бренды, чтобы гарантировать высочайшее качество каждого товара.
+                        </p>
+                    </div>
+                </div>
+
+                <h3 class="mb-4 text-center">Наши преимущества</h3>
+                <div class="row g-4 mb-5">
+                    <div class="col-md-6 col-lg-3">
+                        <div class="feature-card text-center p-4 h-100 shadow-sm">
+                            <div class="feature-icon bg-primary rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px;">
+                                <i class="fa-solid fa-check-circle text-white fa-2x"></i>
                             </div>
+                            <h5 class="fw-bold">Широкий ассортимент</h5>
+                            <p class="text-muted">От классических смесителей до современных душевых систем</p>
                         </div>
-                        <div class="col-md-6">
-                            <div class="d-flex align-items-start">
-                                <i class="fa-solid fa-check-circle text-success fa-2x me-3 mt-1"></i>
-                                <div>
-                                    <h5>Быстрая доставка</h5>
-                                    <p class="text-muted">Собственный логистический центр</p>
-                                </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="feature-card text-center p-4 h-100 shadow-sm">
+                            <div class="feature-icon bg-success rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px;">
+                                <i class="fa-solid fa-check-circle text-white fa-2x"></i>
                             </div>
+                            <h5 class="fw-bold">Гарантия качества</h5>
+                            <p class="text-muted">Работаем только с проверенными производителями</p>
                         </div>
-                        <div class="col-md-6">
-                            <div class="d-flex align-items-start">
-                                <i class="fa-solid fa-check-circle text-success fa-2x me-3 mt-1"></i>
-                                <div>
-                                    <h5>Поддержка экспертов</h5>
-                                    <p class="text-muted">Наши специалисты всегда готовы помочь</p>
-                                </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="feature-card text-center p-4 h-100 shadow-sm">
+                            <div class="feature-icon bg-warning rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px;">
+                                <i class="fa-solid fa-check-circle text-white fa-2x"></i>
                             </div>
+                            <h5 class="fw-bold">Быстрая доставка</h5>
+                            <p class="text-muted">Собственный логистический центр</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="feature-card text-center p-4 h-100 shadow-sm">
+                            <div class="feature-icon bg-info rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px;">
+                                <i class="fa-solid fa-check-circle text-white fa-2x"></i>
+                            </div>
+                            <h5 class="fw-bold">Поддержка экспертов</h5>
+                            <p class="text-muted">Наши специалисты всегда готовы помочь</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-section bg-light rounded-3 p-5">
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-4 mb-md-0">
+                            <h2 class="fw-bold text-primary">5000+</h2>
+                            <p class="text-muted mb-0">довольных клиентов</p>
+                        </div>
+                        <div class="col-md-3 mb-4 mb-md-0">
+                            <h2 class="fw-bold text-success">10000+</h2>
+                            <p class="text-muted mb-0">проданных товаров</p>
+                        </div>
+                        <div class="col-md-3 mb-4 mb-md-0">
+                            <h2 class="fw-bold text-warning">50+</h2>
+                            <p class="text-muted mb-0">магазинов по РФ</p>
+                        </div>
+                        <div class="col-md-3 mb-4 mb-md-0">
+                            <h2 class="fw-bold text-info">8</h2>
+                            <p class="text-muted mb-0">лет на рынке</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
 {% endblock %}

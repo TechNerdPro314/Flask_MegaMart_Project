@@ -4,88 +4,155 @@
 
 {% block content %}
 <div class="container my-5">
-    <h2 class="mb-4">Оформление заказа</h2>
-    <div class="row g-5">
-        <div class="col-md-5 col-lg-4 order-md-last">
-            <h4 class="d-flex justify-content-between align-items-center mb-3">
-                <span class="text-primary">Ваш заказ</span>
-                <span class="badge bg-primary rounded-pill">{{ cart_items | length }}</span>
-            </h4>
-            <ul class="list-group mb-3">
-                {% for item in cart_items %}
-                <li class="list-group-item d-flex justify-content-between lh-sm">
-                    <div>
-                        <h6 class="my-0">{{ item.product.name if current_user.is_authenticated else item.name }}</h6>
-                        <small class="text-muted">{{ item.quantity }} шт. × {{ "{:,.2f}".format((item.product.price if
-                            current_user.is_authenticated else item.price)|float) | replace(",", " ") }} ₽</small>
-                    </div>
-                    <span class="text-muted">{{ "{:,.2f}".format((item.product.price * item.quantity if
-                        current_user.is_authenticated else item.price * item.quantity)|float) | replace(",", " ") }}
-                        ₽</span>
-                </li>
-                {% endfor %}
-                <li class="list-group-item d-flex justify-content-between bg-light">
-                    <span>Сумма товаров</span>
-                    <strong>{{ "{:,.2f}".format(total_price | float) | replace(",", " ") }} ₽</strong>
-                </li>
-                {% if discount_amount > 0 %}
-                <li class="list-group-item d-flex justify-content-between text-success">
-                    <span>Скидка по промокоду</span>
-                    <strong>- {{ "{:,.2f}".format(discount_amount|float) | replace(",", " ") }} ₽</strong>
-                </li>
-                {% endif %}
-                <li class="list-group-item d-flex justify-content-between h5">
-                    <span>Итого к оплате</span>
-                    <strong>{{ "{:,.2f}".format(final_price | float) | replace(",", " ") }} ₽</strong>
-                </li>
-            </ul>
-            <a href="{{ url_for('cart_app.cart_view') }}" class="btn btn-outline-secondary w-100"><i
-                    class="fa-solid fa-pen-to-square me-1"></i> Редактировать корзину</a>
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4 fw-bold">Оформление заказа</h1>
         </div>
-        <div class="col-md-7 col-lg-8">
-            <h4 class="mb-3">Данные покупателя и доставки</h4>
-            <form method="POST" action="{{ url_for('cart_app.checkout') }}" class="needs-validation" novalidate>
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                {% if not current_user.is_authenticated %}
-                <div class="row g-3">
-                    <div class="col-sm-6">
-                        <label for="name" class="form-label">Ваше имя</label>
-                        <input type="text" class="form-control" id="name" name="name" value="{{ user_name or '' }}"
-                            required>
-                        <div class="invalid-feedback">Укажите ваше имя.</div>
+    </div>
+
+    <div class="row g-5">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden p-4">
+                <h3 class="mb-4"><i class="fas fa-user-circle me-2"></i>Данные покупателя и доставки</h3>
+                <form method="POST" action="{{ url_for('cart_app.checkout') }}" class="needs-validation" novalidate>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+                    {% if not current_user.is_authenticated %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="name" class="form-label fw-bold">Ваше имя</label>
+                            <input type="text" class="form-control form-control-lg rounded-3" id="name" name="name" value="{{ user_name or '' }}" required>
+                            <div class="invalid-feedback">Укажите ваше имя.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email" class="form-label fw-bold">Email</label>
+                            <input type="email" class="form-control form-control-lg rounded-3" id="email" name="email" value="{{ user_email or '' }}" placeholder="you@example.com" required>
+                            <div class="invalid-feedback">Укажите корректный email для получения данных заказа.</div>
+                        </div>
                     </div>
-                    <div class="col-sm-6">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" value="{{ user_email or '' }}"
-                            placeholder="you@example.com" required>
-                        <div class="invalid-feedback">Укажите корректный email для получения данных заказа.</div>
+                    <hr class="my-4">
+                    {% endif %}
+
+                    <div class="mb-4">
+                        <label for="phone" class="form-label fw-bold">Телефон</label>
+                        <input type="tel" class="form-control form-control-lg rounded-3" id="phone" name="phone" value="{{ user_phone or '' }}" placeholder="+7 (XXX) XXX-XX-XX" required>
+                        <div class="invalid-feedback">Укажите ваш контактный телефон.</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="address" class="form-label fw-bold">Адрес доставки</label>
+                        <textarea class="form-control form-control-lg rounded-3" id="address" name="address" rows="3" placeholder="Город, улица, дом, квартира, подъезд, этаж" required>{{ user_address or '' }}</textarea>
+                        <div class="invalid-feedback">Укажите полный адрес доставки.</div>
+                    </div>
+
+                    <hr class="my-4">
+                    <h4 class="mb-4"><i class="fas fa-credit-card me-2"></i>Способ оплаты</h4>
+
+                    <div class="payment-methods mb-4">
+                        <div class="form-check mb-3">
+                            <input id="payment_yookassa" name="payment_method" type="radio" class="form-check-input" value="yookassa" checked required>
+                            <label class="form-check-label d-flex align-items-center" for="payment_yookassa">
+                                <div class="payment-icon me-3">
+                                    <i class="fas fa-credit-card fa-2x text-primary"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-0">Банковская карта</h5>
+                                    <p class="text-muted mb-0">Безопасная оплата через YooKassa</p>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input id="payment_cash" name="payment_method" type="radio" class="form-check-input" value="cash">
+                            <label class="form-check-label d-flex align-items-center" for="payment_cash">
+                                <div class="payment-icon me-3">
+                                    <i class="fas fa-money-bill-wave fa-2x text-success"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-0">Наличные</h5>
+                                    <p class="text-muted mb-0">Оплата при получении заказа</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('cart_app.cart_view') }}" class="btn btn-outline-secondary btn-lg rounded-3">
+                            <i class="fa-solid fa-arrow-left me-2"></i>Назад в корзину
+                        </a>
+                        <button class="btn btn-success btn-lg px-5 py-3 rounded-3" type="submit">
+                            <i class="fa-solid fa-lock me-2"></i>Оплатить заказ
+                            <span class="fw-bold">{{ "{:,.2f}".format(final_price | float) | replace(",", " ") }} ₽</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden sticky-top" style="top: 100px;">
+                <div class="card-header bg-light">
+                    <h4 class="mb-0"><i class="fas fa-shopping-bag me-2"></i>Ваш заказ</h4>
+                    <span class="text-muted">{{ cart_items | length }} товар(ов)</span>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for item in cart_items %}
+                        <li class="list-group-item d-flex justify-content-between align-items-start py-3">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">{{ item.product.name if current_user.is_authenticated else item.name }}</h6>
+                                <small class="text-muted d-block">{{ item.quantity }} шт. × {{ "{:,.2f}".format((item.product.price if current_user.is_authenticated else item.price)|float) | replace(",", " ") }} ₽</small>
+                            </div>
+                            <span class="fw-bold text-primary ms-2">{{ "{:,.2f}".format((item.product.price * item.quantity if current_user.is_authenticated else item.price * item.quantity)|float) | replace(",", " ") }} ₽</span>
+                        </li>
+                        {% endfor %}
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="fw-bold">Сумма товаров</span>
+                            <strong>{{ "{:,.2f}".format(total_price | float) | replace(",", " ") }} ₽</strong>
+                        </li>
+                        {% if discount_amount > 0 %}
+                        <li class="list-group-item d-flex justify-content-between text-success">
+                            <span>Скидка по промокоду</span>
+                            <strong>- {{ "{:,.2f}".format(discount_amount|float) | replace(",", " ") }} ₽</strong>
+                        </li>
+                        {% endif %}
+                        <li class="list-group-item d-flex justify-content-between h5 border-top pt-3">
+                            <span class="fw-bold">Итого к оплате</span>
+                            <strong class="text-success">{{ "{:,.2f}".format(final_price | float) | replace(",", " ") }} ₽</strong>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card-body border-top">
+                    <h6 class="mb-3">Способы доставки</h6>
+                    <div class="delivery-options">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input rounded-3" type="radio" name="delivery" id="delivery1" checked>
+                            <label class="form-check-label" for="delivery1">
+                                <strong>Курьером</strong> - 400 ₽
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input rounded-3" type="radio" name="delivery" id="delivery2">
+                            <label class="form-check-label" for="delivery2">
+                                <strong>Самовывоз</strong> - Бесплатно
+                            </label>
+                        </div>
+                        <div class="form-check mb-0">
+                            <input class="form-check-input rounded-3" type="radio" name="delivery" id="delivery3">
+                            <label class="form-check-label" for="delivery3">
+                                <strong>Почта России</strong> - от 300 ₽
+                            </label>
+                        </div>
                     </div>
                 </div>
-                <hr class="my-4">
-                {% endif %}
-                <div class="mb-3">
-                    <label for="phone" class="form-label">Телефон</label>
-                    <input type="tel" class="form-control" id="phone" name="phone" value="{{ user_phone or '' }}"
-                        placeholder="+7 (XXX) XXX-XX-XX" required>
-                    <div class="invalid-feedback">Укажите ваш контактный телефон.</div>
+
+                <div class="card-footer text-center bg-light">
+                    <i class="fas fa-shield-alt text-primary fa-2x mb-2"></i>
+                    <p class="mb-0 text-muted small">Все данные защищены с помощью SSL-шифрования</p>
                 </div>
-                <div class="mb-3">
-                    <label for="address" class="form-label">Адрес доставки</label>
-                    <textarea class="form-control" id="address" name="address" rows="3"
-                        placeholder="Город, улица, дом, квартира" required>{{ user_address or '' }}</textarea>
-                    <div class="invalid-feedback">Укажите полный адрес доставки.</div>
-                </div>
-                <hr class="my-4">
-                <h4 class="mb-3">Оплата</h4>
-                <div class="form-check">
-                    <input id="payment_yookassa" name="payment_method" type="radio" class="form-check-input" checked
-                        required disabled>
-                    <label class="form-check-label" for="payment_yookassa">Оплата картой (YooKassa)</label>
-                    <p class="text-muted small mt-1">Вы будете перенаправлены на защищенную страницу оплаты.</p>
-                </div>
-                <hr class="my-4">
-                <button class="w-100 btn btn-primary btn-lg" type="submit">Перейти к оплате</button>
-            </form>
+            </div>
         </div>
     </div>
 </div>

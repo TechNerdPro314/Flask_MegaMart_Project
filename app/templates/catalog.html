@@ -1,17 +1,23 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container catalog-page">
+<div class="container catalog-page py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Каталог товаров</h1>
+        </div>
+    </div>
+
     <div class="row">
         <!-- Фильтры -->
-        <div class="col-md-3">
-            <div class="filters-panel">
-                <h4>Фильтры</h4>
+        <div class="col-lg-3 d-none d-lg-block">
+            <div class="filters-panel bg-light rounded-3 p-4 sticky-top" style="top: 100px;">
+                <h4 class="mb-4 fw-bold"><i class="fas fa-filter me-2"></i>Фильтры</h4>
                 <form method="GET" action="{{ url_for('main.catalog') }}" id="filter-form">
                     <!-- Категории -->
-                    <div class="filter-group">
-                        <label>Категория:</label>
-                        <select name="category_id" class="form-control">
+                    <div class="filter-group mb-4">
+                        <label class="fw-bold mb-2">Категория:</label>
+                        <select name="category_id" class="form-select">
                             <option value="">Все категории</option>
                             {% for category in all_categories %}
                             <option value="{{ category.id }}" {% if current_category_id==category.id %}selected{% endif
@@ -19,10 +25,11 @@
                             {% endfor %}
                         </select>
                     </div>
+
                     <!-- Бренды -->
-                    <div class="filter-group">
-                        <label>Бренд:</label>
-                        <select name="brand_id" class="form-control">
+                    <div class="filter-group mb-4">
+                        <label class="fw-bold mb-2">Бренд:</label>
+                        <select name="brand_id" class="form-select">
                             <option value="">Все бренды</option>
                             {% for brand in all_brands %}
                             <option value="{{ brand.id }}" {% if current_brand_id==brand.id %}selected{% endif %}>{{
@@ -30,30 +37,33 @@
                             {% endfor %}
                         </select>
                     </div>
+
                     <!-- Цена -->
-                    <div class="filter-group">
-                        <label>Цена (₽):</label>
-                        <div class="row">
-                            <div class="col-xs-6">
+                    <div class="filter-group mb-4">
+                        <label class="fw-bold mb-2">Цена (₽):</label>
+                        <div class="row g-2">
+                            <div class="col-6">
                                 <input type="number" name="min_price" class="form-control" placeholder="От"
                                     value="{{ current_min_price or '' }}">
                             </div>
-                            <div class="col-xs-6">
+                            <div class="col-6">
                                 <input type="number" name="max_price" class="form-control" placeholder="До"
                                     value="{{ current_max_price or '' }}">
                             </div>
                         </div>
                     </div>
+
                     <!-- Поиск -->
-                    <div class="filter-group">
-                        <label>Поиск:</label>
+                    <div class="filter-group mb-4">
+                        <label class="fw-bold mb-2">Поиск:</label>
                         <input type="text" name="search_query" class="form-control" placeholder="Название товара"
                             value="{{ current_search_query or '' }}">
                     </div>
+
                     <!-- Сортировка -->
-                    <div class="filter-group">
-                        <label>Сортировка:</label>
-                        <select name="sort_by" class="form-control">
+                    <div class="filter-group mb-4">
+                        <label class="fw-bold mb-2">Сортировка:</label>
+                        <select name="sort_by" class="form-select">
                             <option value="price_asc" {% if current_sort_by=='price_asc' %}selected{% endif %}>Цена: от
                                 дешевых</option>
                             <option value="price_desc" {% if current_sort_by=='price_desc' %}selected{% endif %}>Цена:
@@ -62,58 +72,159 @@
                                 А-Я</option>
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-block">Применить</button>
-                    <a href="{{ url_for('main.catalog') }}" class="btn btn-default btn-block">Сбросить</a>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Применить фильтры</button>
+                        <a href="{{ url_for('main.catalog') }}" class="btn btn-outline-secondary">Сбросить все</a>
+                    </div>
                 </form>
             </div>
         </div>
 
         <!-- Список товаров -->
-        <div class="col-md-9">
-            <div class="row">
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <p class="mb-0 text-muted">
+                        Найдено товаров: <strong>{{ pagination.total }}</strong>
+                        {% if current_search_query %}
+                        по запросу "{{ current_search_query }}"
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div class="d-lg-none">
+                    <button class="btn btn-outline-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#filterOffcanvas">
+                        <i class="fas fa-filter me-1"></i>Фильтры
+                    </button>
+                </div>
+            </div>
+
+            <!-- Мобильные фильтры -->
+            <div class="offcanvas offcanvas-end d-lg-none" tabindex="-1" id="filterOffcanvas">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title">Фильтры</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <form method="GET" action="{{ url_for('main.catalog') }}" id="mobile-filter-form">
+                        <!-- Категории -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Категория:</label>
+                            <select name="category_id" class="form-select">
+                                <option value="">Все категории</option>
+                                {% for category in all_categories %}
+                                <option value="{{ category.id }}" {% if current_category_id==category.id %}selected{% endif
+                                    %}>{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Бренды -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Бренд:</label>
+                            <select name="brand_id" class="form-select">
+                                <option value="">Все бренды</option>
+                                {% for brand in all_brands %}
+                                <option value="{{ brand.id }}" {% if current_brand_id==brand.id %}selected{% endif %}{{
+                                    brand.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Цена -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Цена (₽):</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="number" name="min_price" class="form-control" placeholder="От"
+                                        value="{{ current_min_price or '' }}">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" name="max_price" class="form-control" placeholder="До"
+                                        value="{{ current_max_price or '' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Поиск -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Поиск:</label>
+                            <input type="text" name="search_query" class="form-control" placeholder="Название товара"
+                                value="{{ current_search_query or '' }}">
+                        </div>
+
+                        <!-- Сортировка -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Сортировка:</label>
+                            <select name="sort_by" class="form-select">
+                                <option value="price_asc" {% if current_sort_by=='price_asc' %}selected{% endif %}>Цена: от
+                                    дешевых</option>
+                                <option value="price_desc" {% if current_sort_by=='price_desc' %}selected{% endif %}>Цена:
+                                    от дорогих</option>
+                                <option value="name_asc" {% if current_sort_by=='name_asc' %}selected{% endif %}>Название:
+                                    А-Я</option>
+                            </select>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Применить</button>
+                            <a href="{{ url_for('main.catalog') }}" class="btn btn-outline-secondary">Сбросить</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Товары -->
+            {% if products %}
+            <div class="row g-4">
                 {% for product in products %}
-                <div class="col-sm-6 col-md-4 product-card-wrapper">
-                    <div class="product-card">
-                        <div class="product-image">
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="product-card card h-100 shadow-sm border-0 rounded-4 overflow-hidden animate__animated animate__fadeInUp">
+                        <div class="product-image position-relative overflow-hidden">
                             {% if current_user.is_authenticated %}
                             {% set is_in_wishlist = product in current_user.wishlist.all() %}
-                            <button class="btn btn-light btn-sm position-absolute top-0 end-0 m-2 wishlist-toggle-btn"
+                            <button class="btn btn-light btn-sm position-absolute top-0 end-0 m-2 wishlist-toggle-btn rounded-circle shadow-sm"
                                 data-product-id="{{ product.id }}" title="В избранное">
                                 <i
-                                    class="fa-heart {% if is_in_wishlist %}fa-solid text-danger{% else %}fa-regular{% endif %}"></i>
+                                    class="fa-heart {% if is_in_wishlist %}fa-solid text-danger{% else %}fa-regular text-muted{% endif %}"></i>
                             </button>
                             {% endif %}
                             <a href="{% if product.slug %}{{ url_for('main.product', slug=product.slug) }}{% else %}{{ url_for('main.product', product_id=product.id) }}{% endif %}">
                                 <img src="{{ url_for('static', filename='images/' + product.first_image) }}"
-                                    alt="{{ product.name }}" class="img-responsive" loading="lazy">
+                                    alt="{{ product.name }}" class="card-img-top w-100" style="height: 220px; object-fit: cover; transition: transform 0.3s ease;" loading="lazy">
                             </a>
+                            {% if product.old_price %}
+                            <span class="discount-badge bg-danger text-white position-absolute top-0 start-0 m-2 px-3 py-1 rounded-3 fw-bold">{{ ((product.old_price - product.price) / product.old_price *
+                                100)|round|int }}%</span>
+                            {% endif %}
                         </div>
-                        <div class="product-info">
-                            <h3 class="product-title">
-                                <a href="{% if product.slug %}{{ url_for('main.product', slug=product.slug) }}{% else %}{{ url_for('main.product', product_id=product.id) }}{% endif %}">{{ product.name }}</a>
+                        <div class="card-body d-flex flex-column p-4">
+                            <h3 class="product-title card-title flex-grow-1">
+                                <a href="{% if product.slug %}{{ url_for('main.product', slug=product.slug) }}{% else %}{{ url_for('main.product', product_id=product.id) }}{% endif %}" class="text-decoration-none text-dark">{{ product.name }}</a>
                             </h3>
-                            <div class="product-price">
-                                <span class="current-price">{{ "%.2f"|format(product.price) }} ₽</span>
+                            <div class="product-price mt-2 mb-2">
+                                <span class="current-price fw-bold fs-5 text-primary">{{ "%.2f"|format(product.price) }} ₽</span>
                                 {% if product.old_price %}
-                                <span class="old-price">{{ "%.2f"|format(product.old_price) }} ₽</span>
+                                <span class="old-price text-muted text-decoration-line-through ms-2 fs-6">{{ "%.2f"|format(product.old_price) }} ₽</span>
                                 {% endif %}
                             </div>
-                            <div class="product-stock">
+                            <div class="product-stock mb-3">
                                 {% if product.in_stock > 10 %}
-                                <span class="label label-success">В наличии</span>
+                                <span class="badge bg-success">В наличии</span>
                                 {% elif product.in_stock > 0 %}
-                                <span class="label label-warning">Осталось мало</span>
+                                <span class="badge bg-warning text-dark">Осталось мало</span>
                                 {% else %}
-                                <span class="label label-danger">Нет в наличии</span>
+                                <span class="badge bg-danger">Нет в наличии</span>
                                 {% endif %}
                             </div>
                             <div class="product-actions">
-                                <form action="{{ url_for('cart_app.add_to_cart', product_id=product.id) }}"
-                                    method="POST" class="add-to-cart-form">
+                                <form action="{{ url_for('cart_app.add_to_cart', product_id=product.id) }}" method="POST"
+                                    class="add-to-cart-form w-100">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                                    <button type="submit" class="btn btn-primary btn-sm" {% if product.in_stock==0
+                                    <button type="submit" class="btn btn-primary w-100" {% if product.in_stock==0
                                         %}disabled{% endif %}>
-                                        <i class="fas fa-shopping-cart"></i> В корзину
+                                        <i class="fas fa-shopping-cart me-1"></i>В корзину
                                     </button>
                                 </form>
                             </div>
@@ -122,44 +233,54 @@
                 </div>
                 {% endfor %}
             </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">Товары не найдены</h4>
+                <p class="text-muted">Попробуйте изменить параметры поиска или сбросить фильтры</p>
+                <a href="{{ url_for('main.catalog') }}" class="btn btn-primary">Сбросить фильтры</a>
+            </div>
+            {% endif %}
 
             <!-- Пагинация -->
-            <div class="pagination-wrapper">
-                <nav aria-label="Page navigation">
-                    <ul class="pagination">
-                        {% if pagination.has_prev %}
-                        <li>
-                            <a
-                                href="{{ url_for('main.catalog', page=pagination.prev_num, category_id=current_category_id, brand_id=current_brand_id, min_price=current_min_price, max_price=current_max_price, search_query=current_search_query, sort_by=current_sort_by) }}">
-                                <span aria-hidden="true">&laquo;</span>
-                            </a>
-                        </li>
-                        {% endif %}
-                        {% for page_num in pagination.iter_pages() %}
-                        {% if page_num %}
-                        {% if page_num == pagination.page %}
-                        <li class="active"><a href="#">{{ page_num }}</a></li>
-                        {% else %}
-                        <li>
-                            <a
-                                href="{{ url_for('main.catalog', page=page_num, category_id=current_category_id, brand_id=current_brand_id, min_price=current_min_price, max_price=current_max_price, search_query=current_search_query, sort_by=current_sort_by) }}">
-                                {{ page_num }}
-                            </a>
-                        </li>
-                        {% endif %}
-                        {% endif %}
-                        {% endfor %}
-                        {% if pagination.has_next %}
-                        <li>
-                            <a
-                                href="{{ url_for('main.catalog', page=pagination.next_num, category_id=current_category_id, brand_id=current_brand_id, min_price=current_min_price, max_price=current_max_price, search_query=current_search_query, sort_by=current_sort_by) }}">
-                                <span aria-hidden="true">&raquo;</span>
-                            </a>
-                        </li>
-                        {% endif %}
-                    </ul>
-                </nav>
-            </div>
+            {% if pagination.pages > 1 %}
+            <nav aria-label="Page navigation" class="mt-5">
+                <ul class="pagination justify-content-center flex-wrap">
+                    {% if pagination.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link rounded-3 border-0 shadow-sm"
+                            href="{{ url_for('main.catalog', page=pagination.prev_num, category_id=current_category_id, brand_id=current_brand_id, min_price=current_min_price, max_price=current_max_price, search_query=current_search_query, sort_by=current_sort_by) }}">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for page_num in pagination.iter_pages() %}
+                    {% if page_num %}
+                    {% if page_num == pagination.page %}
+                    <li class="page-item active"><a class="page-link rounded-3 border-0 shadow-sm" href="#">{{ page_num }}</a></li>
+                    {% else %}
+                    <li class="page-item">
+                        <a class="page-link rounded-3 border-0 shadow-sm"
+                            href="{{ url_for('main.catalog', page=page_num, category_id=current_category_id, brand_id=current_brand_id, min_price=current_min_price, max_price=current_max_price, search_query=current_search_query, sort_by=current_sort_by) }}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if pagination.has_next %}
+                    <li class="page-item">
+                        <a class="page-link rounded-3 border-0 shadow-sm"
+                            href="{{ url_for('main.catalog', page=pagination.next_num, category_id=current_category_id, brand_id=current_brand_id, min_price=current_min_price, max_price=current_max_price, search_query=current_search_query, sort_by=current_sort_by) }}">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
         </div>
     </div>
 </div>

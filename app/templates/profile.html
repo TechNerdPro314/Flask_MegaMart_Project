@@ -6,22 +6,17 @@
 <div class="container my-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0">Личный кабинет</h2>
-        <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-outline-secondary">Выйти</a>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-outline-secondary rounded-3">Выйти</a>
     </div>
 
     <div class="row">
         <div class="col-md-3">
-            <div class="list-group" id="profile-tabs" role="tablist">
-                <a class="list-group-item list-group-item-action active" data-bs-toggle="list" href="#orders"
-                    role="tab">Мои заказы</a>
-                <a class="list-group-item list-group-item-action" data-bs-toggle="list" href="#wishlist"
-                    role="tab">Список желаний</a>
-                <a class="list-group-item list-group-item-action" data-bs-toggle="list" href="#viewed" role="tab">Вы
-                    смотрели</a>
-                <a class="list-group-item list-group-item-action"
-                    href="{{ url_for('auth.edit_profile') }}">Редактировать профиль</a>
-                <a class="list-group-item list-group-item-action" href="{{ url_for('auth.change_password') }}">Изменить
-                    пароль</a>
+            <div class="list-group rounded-4 shadow-sm border-0" id="profile-tabs" role="tablist">
+                <a class="list-group-item list-group-item-action rounded-4 mb-2 active" data-bs-toggle="list" href="#orders" role="tab">Мои заказы</a>
+                <a class="list-group-item list-group-item-action rounded-4 mb-2" data-bs-toggle="list" href="#wishlist" role="tab">Список желаний</a>
+                <a class="list-group-item list-group-item-action rounded-4 mb-2" data-bs-toggle="list" href="#viewed" role="tab">Вы смотрели</a>
+                <a class="list-group-item list-group-item-action rounded-4 mb-2" href="{{ url_for('auth.edit_profile') }}">Редактировать профиль</a>
+                <a class="list-group-item list-group-item-action rounded-4 mb-0" href="{{ url_for('auth.change_password') }}">Изменить пароль</a>
             </div>
         </div>
 
@@ -31,9 +26,9 @@
                 <div class="tab-pane fade show active" id="orders" role="tabpanel">
                     <h4>История заказов</h4>
                     {% if orders %}
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead>
+                    <div class="table-responsive rounded-3 overflow-hidden">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
                                 <tr>
                                     <th>№ Заказа</th>
                                     <th>Дата</th>
@@ -48,10 +43,10 @@
                                     <td>{{ order.id }}</td>
                                     <td>{{ order.created_at.strftime('%d.%m.%Y') }}</td>
                                     <td>{{ "%.2f"|format(order.total_amount) }} ₽</td>
-                                    <td><span class="badge bg-info">{{ order.status }}</span></td>
+                                    <td><span class="badge bg-info rounded-3">{{ order.status }}</span></td>
                                     <td>
                                         <a href="{{ url_for('cart_app.order_details', order_id=order.id) }}"
-                                            class="btn btn-sm btn-outline-primary">Детали</a>
+                                            class="btn btn-sm btn-outline-primary rounded-3">Детали</a>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -59,7 +54,9 @@
                         </table>
                     </div>
                     {% else %}
-                    <p>У вас еще нет заказов.</p>
+                    <div class="alert alert-light rounded-4">
+                        <p class="mb-0">У вас еще нет заказов.</p>
+                    </div>
                     {% endif %}
                 </div>
 
@@ -67,23 +64,24 @@
                 <div class="tab-pane fade" id="wishlist" role="tabpanel">
                     <h4>Список желаний</h4>
                     {% if wishlist_products %}
-                    <div class="row">
+                    <div class="row g-4">
                         {% for product in wishlist_products %}
                         <div class="col-md-4 mb-3">
-                            <div class="card h-100 text-center">
-                                <div class="card-body">
+                            <div class="card h-100 text-center shadow-sm border-0 rounded-4 overflow-hidden">
+                                <div class="card-body p-4">
                                     <h5 class="card-title fs-6">{{ product.name }}</h5>
-                                    <p class="card-text fw-bold">{{ "%.2f"|format(product.price) }} ₽</p>
+                                    <p class="card-text fw-bold text-primary">{{ "%.2f"|format(product.price) }} ₽</p>
                                     <a href="{% if product.slug %}{{ url_for('main.product', slug=product.slug) }}{% else %}{{ url_for('main.product', product_id=product.id) }}{% endif %}"
-                                        class="btn btn-primary btn-sm">Перейти к товару</a>
+                                        class="btn btn-primary btn-sm rounded-3">Перейти к товару</a>
                                 </div>
                             </div>
                         </div>
                         {% endfor %}
                     </div>
                     {% else %}
-                    <p>Ваш список желаний пуст. Вы можете добавлять товары в избранное, нажимая на сердечко в каталоге.
-                    </p>
+                    <div class="alert alert-light rounded-4">
+                        <p class="mb-0">Ваш список желаний пуст. Вы можете добавлять товары в избранное, нажимая на сердечко в каталоге.</p>
+                    </div>
                     {% endif %}
                 </div>
 
@@ -91,22 +89,24 @@
                 <div class="tab-pane fade" id="viewed" role="tabpanel">
                     <h4>Недавно просмотренные товары</h4>
                     {% if viewed_products %}
-                    <div class="row">
+                    <div class="row g-4">
                         {% for product in viewed_products %}
                         <div class="col-md-4 mb-3">
-                            <div class="card h-100 text-center">
-                                <div class="card-body">
+                            <div class="card h-100 text-center shadow-sm border-0 rounded-4 overflow-hidden">
+                                <div class="card-body p-4">
                                     <h5 class="card-title fs-6">{{ product.name }}</h5>
-                                    <p class="card-text fw-bold">{{ "%.2f"|format(product.price) }} ₽</p>
+                                    <p class="card-text fw-bold text-primary">{{ "%.2f"|format(product.price) }} ₽</p>
                                     <a href="{% if product.slug %}{{ url_for('main.product', slug=product.slug) }}{% else %}{{ url_for('main.product', product_id=product.id) }}{% endif %}"
-                                        class="btn btn-primary btn-sm">Перейти к товару</a>
+                                        class="btn btn-primary btn-sm rounded-3">Перейти к товару</a>
                                 </div>
                             </div>
                         </div>
                         {% endfor %}
                     </div>
                     {% else %}
-                    <p>Вы еще не просматривали товары.</p>
+                    <div class="alert alert-light rounded-4">
+                        <p class="mb-0">Вы еще не просматривали товары.</p>
+                    </div>
                     {% endif %}
                 </div>
             </div>
