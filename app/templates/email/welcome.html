@@ -1,38 +1,91 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 
 <head>
-    <meta charset="UTF-8">
-    <title>Добро пожаловать в MegaMart!</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добро пожаловать в MegaMart</title>
 </head>
 
-<body>
-    <div class="container">
-        <h2>Здравствуйте, {{ user.name }}!</h2>
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Arial', sans-serif;">
 
-        {% if password %}
-        <p>Спасибо за ваш первый заказ! Для вашего удобства мы создали аккаунт в магазине <strong>MegaMart</strong>.</p>
-        <p>Вы можете войти в него, чтобы отслеживать статус заказа, просматривать историю покупок и многое другое. Ваши
-            данные для входа:</p>
-        <ul>
-            <li><strong>Email:</strong> {{ user.email }}</li>
-            <li><strong>Временный пароль:</strong> <code>{{ password }}</code></li>
-        </ul>
-        <p>После первого входа настоятельно рекомендуем <a
-                href="{{ url_for('auth.change_password', _external=True) }}">сменить пароль</a> в личном кабинете.</p>
-        {% else %}
-        <p>Спасибо за регистрацию в нашем интернет-магазине сантехники <strong>MegaMart</strong>.</p>
-        <p>Мы рады, что вы с нами! Теперь вы можете отслеживать свои заказы, добавлять товары в избранное и многое
-            другое.</p>
-        {% endif %}
+    <!-- Main Wrapper -->
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td align="center" style="padding: 40px 10px;">
 
-        <p style="margin-top: 25px;">
-            <a href="{{ url_for('main.catalog', _external=True) }}" class="button">Перейти в каталог</a>
-        </p>
-        <hr style="margin-top: 30px;">
-        <p style="color: #6c757d; font-size: 0.8em;">Это письмо сгенерировано автоматически, пожалуйста, не отвечайте на
-            него.</p>
-    </div>
+                <!-- Content Container -->
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="600"
+                    style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+
+                    <!-- Header -->
+                    <tr>
+                        <td bgcolor="#0f4c81" align="center" style="padding: 30px;">
+                            <h1
+                                style="color: #ffffff; margin: 0; font-size: 24px; font-weight: bold; letter-spacing: 1px;">
+                                MegaMart</h1>
+                        </td>
+                    </tr>
+
+                    <!-- Body -->
+                    <tr>
+                        <td style="padding: 40px 30px; color: #334155; font-size: 16px; line-height: 1.6;">
+                            <h2 style="color: #0f4c81; margin-top: 0; margin-bottom: 20px;">Добро пожаловать, {{
+                                user.name }}!</h2>
+
+                            <p style="margin-bottom: 20px;">
+                                Спасибо, что присоединились к <strong>MegaMart</strong>. Мы рады видеть вас в числе
+                                наших клиентов.
+                                Теперь у вас есть доступ к истории заказов, специальным предложениям и быстрой
+                                поддержке.
+                            </p>
+
+                            {% if password %}
+                            <!-- Auto-generated password block -->
+                            <div
+                                style="background-color: #f1f5f9; border-left: 4px solid #f59e0b; padding: 15px; margin-bottom: 25px; border-radius: 4px;">
+                                <p style="margin: 0; font-size: 14px; color: #64748b;">Ваш аккаунт был создан
+                                    автоматически.</p>
+                                <p style="margin: 10px 0 5px 0;"><strong>Ваш логин:</strong> {{ user.email }}</p>
+                                <p style="margin: 0;"><strong>Ваш пароль:</strong> <span
+                                        style="font-family: monospace; background: #e2e8f0; padding: 2px 6px; border-radius: 3px;">{{
+                                        password }}</span></p>
+                                <p style="margin-top: 10px; font-size: 13px; color: #ef4444;">Пожалуйста, смените пароль
+                                    после первого входа!</p>
+                            </div>
+                            {% endif %}
+
+                            <p style="margin-bottom: 30px;">
+                                Мы собрали для вас лучшие товары для ванной комнаты. Загляните в наш каталог!
+                            </p>
+
+                            <!-- CTA Button -->
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td align="center">
+                                        <a href="{{ url_for('main.index', _external=True) }}"
+                                            style="display: inline-block; padding: 14px 30px; background-color: #0f4c81; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">Перейти
+                                            в магазин</a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td bgcolor="#f1f5f9" align="center" style="padding: 20px; font-size: 13px; color: #94a3b8;">
+                            <p style="margin: 0 0 10px 0;">&copy; MegaMart. Все права защищены.</p>
+                            <p style="margin: 0;">Вы получили это письмо, так как зарегистрировались на сайте MegaMart.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+
+            </td>
+        </tr>
+    </table>
+
 </body>
 
 </html>

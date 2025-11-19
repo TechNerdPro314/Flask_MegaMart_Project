@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Доступ запрещен (403){% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center align-items-center" style="min-height: 60vh;">
+        <div class="col-lg-6 text-center animate__animated animate__fadeInUp">
+
+            <div class="mb-4">
+                <i class="fas fa-shield-alt fa-6x text-danger opacity-75"></i>
+            </div>
+
+            <h1 class="fw-bold mb-3">Доступ запрещен</h1>
+            <p class="text-muted lead mb-5">
+                У вас недостаточно прав для просмотра этой страницы. Пожалуйста, войдите в другой аккаунт или вернитесь
+                назад.
+            </p>
+
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">
+                    Войти
+                </a>
+                <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary btn-lg px-5 rounded-pill">
+                    На главную
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

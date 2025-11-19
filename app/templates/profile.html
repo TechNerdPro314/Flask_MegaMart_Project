@@ -3,50 +3,87 @@
 {% block title %}Личный кабинет{% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0">Личный кабинет</h2>
-        <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-outline-secondary rounded-3">Выйти</a>
-    </div>
+<div class="container pb-5">
+    <h1 class="fw-bold mb-4">Личный кабинет</h1>
 
-    <div class="row">
-        <div class="col-md-3">
-            <div class="list-group rounded-4 shadow-sm border-0" id="profile-tabs" role="tablist">
-                <a class="list-group-item list-group-item-action rounded-4 mb-2 active" data-bs-toggle="list" href="#orders" role="tab">Мои заказы</a>
-                <a class="list-group-item list-group-item-action rounded-4 mb-2" data-bs-toggle="list" href="#wishlist" role="tab">Список желаний</a>
-                <a class="list-group-item list-group-item-action rounded-4 mb-2" data-bs-toggle="list" href="#viewed" role="tab">Вы смотрели</a>
-                <a class="list-group-item list-group-item-action rounded-4 mb-2" href="{{ url_for('auth.edit_profile') }}">Редактировать профиль</a>
-                <a class="list-group-item list-group-item-action rounded-4 mb-0" href="{{ url_for('auth.change_password') }}">Изменить пароль</a>
+    <div class="row g-4">
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <div class="profile-sidebar shadow-sm mb-4 sticky-top" style="top: 6rem;">
+                <div class="profile-user-info">
+                    <div class="profile-avatar-placeholder">
+                        {{ current_user.name[0] | upper }}
+                    </div>
+                    <h5 class="fw-bold mb-1">{{ current_user.name }}</h5>
+                    <p class="text-muted small mb-0">{{ current_user.email }}</p>
+                </div>
+                <div class="nav flex-column dashboard-menu p-0">
+                    <a href="{{ url_for('auth.profile') }}" class="nav-link active">
+                        <i class="fas fa-box-open me-2" style="width: 20px;"></i> Мои заказы
+                    </a>
+                    <a href="{{ url_for('auth.edit_profile') }}" class="nav-link">
+                        <i class="fas fa-user-edit me-2" style="width: 20px;"></i> Настройки профиля
+                    </a>
+                    <a href="{{ url_for('auth.change_password') }}" class="nav-link">
+                        <i class="fas fa-key me-2" style="width: 20px;"></i> Сменить пароль
+                    </a>
+                    <div class="border-top my-2"></div>
+                    <a href="{{ url_for('auth.logout') }}" class="nav-link text-danger">
+                        <i class="fas fa-sign-out-alt me-2" style="width: 20px;"></i> Выйти
+                    </a>
+                </div>
             </div>
         </div>
 
-        <div class="col-md-9">
-            <div class="tab-content">
-                <!-- Вкладка "Мои заказы" -->
-                <div class="tab-pane fade show active" id="orders" role="tabpanel">
-                    <h4>История заказов</h4>
+        <!-- Main Content (Order History) -->
+        <div class="col-lg-9">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold">История заказов</h5>
+                    <span class="badge bg-light text-dark rounded-pill">{{ orders|length }} заказов</span>
+                </div>
+                <div class="card-body p-0">
                     {% if orders %}
-                    <div class="table-responsive rounded-3 overflow-hidden">
+                    <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
+                            <thead class="bg-light text-muted small text-uppercase">
                                 <tr>
-                                    <th>№ Заказа</th>
-                                    <th>Дата</th>
-                                    <th>Сумма</th>
-                                    <th>Статус</th>
-                                    <th>Действия</th>
+                                    <th class="ps-4 py-3">№ Заказа</th>
+                                    <th class="py-3">Дата</th>
+                                    <th class="py-3">Сумма</th>
+                                    <th class="py-3">Статус</th>
+                                    <th class="text-end pe-4 py-3">Действия</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for order in orders %}
                                 <tr>
-                                    <td>{{ order.id }}</td>
+                                    <td class="ps-4 fw-bold text-primary">#{{ order.id }}</td>
                                     <td>{{ order.created_at.strftime('%d.%m.%Y') }}</td>
-                                    <td>{{ "%.2f"|format(order.total_amount) }} ₽</td>
-                                    <td><span class="badge bg-info rounded-3">{{ order.status }}</span></td>
+                                    <td class="fw-bold">{{ "{:,.0f}".format(order.final_amount).replace(',', ' ') }} ₽
+                                    </td>
                                     <td>
+                                        {% if order.status == 'Paid' %}
+                                        <span class="status-badge status-paid">Оплачен</span>
+                                        {% elif order.status == 'Pending' %}
+                                        <span class="status-badge status-pending">Ожидает оплаты</span>
+                                        {% elif order.status == 'Failed' %}
+                                        <span class="status-badge status-cancelled">Ошибка</span>
+                                        {% else %}
+                                        <span class="status-badge bg-light text-dark">{{ order.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        {% if order.status == 'Pending' %}
+                                        <a href="{{ url_for('cart_app.pay_order', order_id=order.id) }}"
+                                            class="btn btn-sm btn-primary me-1">
+                                            Оплатить
+                                        </a>
+                                        {% endif %}
                                         <a href="{{ url_for('cart_app.order_details', order_id=order.id) }}"
-                                            class="btn btn-sm btn-outline-primary rounded-3">Детали</a>
+                                            class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -54,58 +91,11 @@
                         </table>
                     </div>
                     {% else %}
-                    <div class="alert alert-light rounded-4">
-                        <p class="mb-0">У вас еще нет заказов.</p>
-                    </div>
-                    {% endif %}
-                </div>
-
-                <!-- Вкладка "Список желаний" -->
-                <div class="tab-pane fade" id="wishlist" role="tabpanel">
-                    <h4>Список желаний</h4>
-                    {% if wishlist_products %}
-                    <div class="row g-4">
-                        {% for product in wishlist_products %}
-                        <div class="col-md-4 mb-3">
-                            <div class="card h-100 text-center shadow-sm border-0 rounded-4 overflow-hidden">
-                                <div class="card-body p-4">
-                                    <h5 class="card-title fs-6">{{ product.name }}</h5>
-                                    <p class="card-text fw-bold text-primary">{{ "%.2f"|format(product.price) }} ₽</p>
-                                    <a href="{% if product.slug %}{{ url_for('main.product', slug=product.slug) }}{% else %}{{ url_for('main.product', product_id=product.id) }}{% endif %}"
-                                        class="btn btn-primary btn-sm rounded-3">Перейти к товару</a>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <div class="alert alert-light rounded-4">
-                        <p class="mb-0">Ваш список желаний пуст. Вы можете добавлять товары в избранное, нажимая на сердечко в каталоге.</p>
-                    </div>
-                    {% endif %}
-                </div>
-
-                <!-- Вкладка "Вы смотрели" -->
-                <div class="tab-pane fade" id="viewed" role="tabpanel">
-                    <h4>Недавно просмотренные товары</h4>
-                    {% if viewed_products %}
-                    <div class="row g-4">
-                        {% for product in viewed_products %}
-                        <div class="col-md-4 mb-3">
-                            <div class="card h-100 text-center shadow-sm border-0 rounded-4 overflow-hidden">
-                                <div class="card-body p-4">
-                                    <h5 class="card-title fs-6">{{ product.name }}</h5>
-                                    <p class="card-text fw-bold text-primary">{{ "%.2f"|format(product.price) }} ₽</p>
-                                    <a href="{% if product.slug %}{{ url_for('main.product', slug=product.slug) }}{% else %}{{ url_for('main.product', product_id=product.id) }}{% endif %}"
-                                        class="btn btn-primary btn-sm rounded-3">Перейти к товару</a>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <div class="alert alert-light rounded-4">
-                        <p class="mb-0">Вы еще не просматривали товары.</p>
+                    <div class="text-center py-5">
+                        <i class="fas fa-clipboard-list fa-3x text-muted opacity-25 mb-3"></i>
+                        <h5>Заказов пока нет</h5>
+                        <p class="text-muted">Самое время сделать первую покупку!</p>
+                        <a href="{{ url_for('main.catalog') }}" class="btn btn-primary">Перейти в каталог</a>
                     </div>
                     {% endif %}
                 </div>

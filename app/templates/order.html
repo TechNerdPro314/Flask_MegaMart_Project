@@ -1,62 +1,229 @@
 {% extends "base.html" %}
 
-{% block title %}Заказ №{{ order.id }}{% endblock %}
+{% block title %}Заказ #{{ order.id }}{% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0">Детали заказа №{{ order.id }}</h2>
-        <a href="{{ url_for('auth.profile') }}" class="btn btn-outline-secondary">
-            <i class="fa-solid fa-arrow-left me-1"></i> К списку заказов
+<div class="container pb-5">
+
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb" class="my-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('auth.profile') }}">Личный кабинет</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Заказ #{{ order.id }}</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div
+        class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+        <div>
+            <div class="d-flex align-items-center gap-3 mb-1">
+                <h1 class="h2 fw-bold mb-0">Заказ #{{ order.id }}</h1>
+                {% if order.status == 'Paid' %}
+                <span
+                    class="badge bg-success bg-opacity-10 text-success rounded-pill border border-success border-opacity-25 px-3">
+                    <i class="fas fa-check-circle me-1"></i> Оплачен
+                </span>
+                {% elif order.status == 'Pending' %}
+                <span
+                    class="badge bg-warning bg-opacity-10 text-warning rounded-pill border border-warning border-opacity-25 px-3">
+                    <i class="fas fa-clock me-1"></i> Ожидает оплаты
+                </span>
+                {% elif order.status == 'Failed' %}
+                <span
+                    class="badge bg-danger bg-opacity-10 text-danger rounded-pill border border-danger border-opacity-25 px-3">
+                    <i class="fas fa-times-circle me-1"></i> Ошибка
+                </span>
+                {% else %}
+                <span
+                    class="badge bg-info bg-opacity-10 text-info rounded-pill border border-info border-opacity-25 px-3">
+                    {{ order.status }}
+                </span>
+                {% endif %}
+            </div>
+            <p class="text-muted mb-0">от {{ order.created_at.strftime('%d.%m.%Y в %H:%M') }}</p>
+        </div>
+
+        {% if order.status == 'Pending' %}
+        <a href="{{ url_for('cart_app.pay_order', order_id=order.id) }}"
+            class="btn btn-primary shadow-sm fw-bold px-4 py-2">
+            <i class="fas fa-credit-card me-2"></i> Оплатить заказ
         </a>
+        {% endif %}
     </div>
 
-    <div class="card shadow-sm">
-        <div class="card-header">
-            <strong>Дата:</strong> {{ order.created_at.strftime('%d.%m.%Y в %H:%M') }} |
-            <strong>Статус:</strong> <span class="badge bg-info">{{ order.status }}</span>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-8">
-                    <h5 class="card-title">Состав заказа</h5>
-                    <ul class="list-group list-group-flush">
-                        {% for item in order.items %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            {{ item.product.name }} ({{ item.quantity }} шт.)
-                            <span>{{ "%.2f"|format(item.price * item.quantity) }} ₽</span>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                <div class="col-md-4">
-                    <h5 class="card-title">Сумма</h5>
-                    <ul class="list-group">
-                        <li class="list-group-item d-flex justify-content-between">
-                            <span>Сумма товаров:</span>
-                            <span>{{ "%.2f"|format(order.total_amount) }} ₽</span>
-                        </li>
-                        {% if order.discount_amount > 0 %}
-                        <li class="list-group-item d-flex justify-content-between text-success">
-                            <span>Скидка ({{ order.promo_code }}):</span>
-                            <span>- {{ "%.2f"|format(order.discount_amount) }} ₽</span>
-                        </li>
-                        {% endif %}
-                        <li class="list-group-item d-flex justify-content-between fw-bold h5">
-                            <span>Итого:</span>
-                            <span>{{ "%.2f"|format(order.final_amount) }} ₽</span>
-                        </li>
-                    </ul>
+    <div class="row g-4">
+        <!-- Left Column: Items & Status -->
+        <div class="col-lg-8">
+
+            <!-- Order Progress Tracker (Visual) -->
+            {% if order.status != 'Cancelled' and order.status != 'Failed' %}
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-4">Статус выполнения</h5>
+                    <div class="position-relative m-4">
+                        <div class="progress" style="height: 2px;">
+                            <!-- ИСПРАВЛЕНО: Используем классы Bootstrap вместо style -->
+                            <div class="progress-bar bg-primary 
+                                {% if order.status == 'Paid' %}w-50
+                                {% elif order.status != 'Pending' %}w-100
+                                {% endif %}" role="progressbar"
+                                aria-valuenow="{% if order.status == 'Pending' %}0{% elif order.status == 'Paid' %}50{% else %}100{% endif %}"
+                                aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+
+                        <!-- Step 1: Created -->
+                        <div class="position-absolute top-0 start-0 translate-middle btn btn-sm btn-primary rounded-pill"
+                            style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-check small"></i>
+                        </div>
+                        <div class="position-absolute top-100 start-0 translate-middle text-center mt-2"
+                            style="width: 100px;">
+                            <small class="fw-bold d-block">Создан</small>
+                        </div>
+
+                        <!-- Step 2: Paid -->
+                        <div class="position-absolute top-0 start-50 translate-middle btn btn-sm {{ 'btn-primary' if order.status == 'Paid' or order.status == 'Shipped' else 'btn-light border' }} rounded-pill"
+                            style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
+                            {% if order.status == 'Paid' or order.status == 'Shipped' %}<i
+                                class="fas fa-check small"></i>{% else %}2{% endif %}
+                        </div>
+                        <div class="position-absolute top-100 start-50 translate-middle text-center mt-2"
+                            style="width: 100px;">
+                            <small
+                                class="fw-bold d-block {{ 'text-primary' if order.status == 'Paid' else 'text-muted' }}">Оплачен</small>
+                        </div>
+
+                        <!-- Step 3: Sent -->
+                        <div class="position-absolute top-0 start-100 translate-middle btn btn-sm btn-light border rounded-pill"
+                            style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
+                            3
+                        </div>
+                        <div class="position-absolute top-100 start-100 translate-middle text-center mt-2"
+                            style="width: 100px;">
+                            <small class="text-muted fw-bold d-block">Отправлен</small>
+                        </div>
+                    </div>
+                    <!-- Spacer for labels -->
+                    <div class="mt-4"></div>
                 </div>
             </div>
-            <hr>
-            <p><strong>Адрес доставки:</strong> {{ order.shipping_address }}</p>
-
-            {% if order.status != 'Paid' %}
-            <a href="{{ url_for('cart_app.pay_order', order_id=order.id) }}" class="btn btn-success">
-                <i class="fa-solid fa-credit-card me-2"></i> Оплатить заказ
-            </a>
             {% endif %}
+
+            <!-- Order Items -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-box-open me-2 text-primary"></i>Состав заказа</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <tbody>
+                                {% for item in order.items %}
+                                <tr>
+                                    <td class="ps-4 py-3" style="width: 80px;">
+                                        <a href="{{ url_for('main.product', product_id=item.product_id) }}">
+                                            <img src="{{ url_for('static', filename='images/' + (item.product.images[0].image_url if item.product.images else 'default_product.png')) }}"
+                                                alt="{{ item.product.name }}" class="rounded border"
+                                                style="width: 60px; height: 60px; object-fit: contain;">
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('main.product', product_id=item.product_id) }}"
+                                            class="text-decoration-none text-dark fw-bold">
+                                            {{ item.product.name }}
+                                        </a>
+                                        <div class="small text-muted">Артикул: {{ item.product.sku }}</div>
+                                    </td>
+                                    <td class="text-center text-nowrap">
+                                        {{ item.quantity }} шт.
+                                    </td>
+                                    <td class="text-end pe-4 text-nowrap fw-bold">
+                                        {{ "{:,.0f}".format(item.price * item.quantity).replace(',', ' ') }} ₽
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Details & Summary -->
+        <div class="col-lg-4">
+
+            <!-- Total Summary -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold">Сумма заказа</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Стоимость товаров</span>
+                        <span>{{ "{:,.0f}".format(order.total_amount).replace(',', ' ') }} ₽</span>
+                    </div>
+                    {% if order.discount_amount > 0 %}
+                    <div class="d-flex justify-content-between mb-2 text-success">
+                        <span>Скидка</span>
+                        <span>-{{ "{:,.0f}".format(order.discount_amount).replace(',', ' ') }} ₽</span>
+                    </div>
+                    {% endif %}
+
+                    <hr class="my-3">
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fs-5 fw-bold">Итого</span>
+                        <span class="fs-4 fw-bold text-primary">{{ "{:,.0f}".format(order.final_amount).replace(',', '
+                            ') }} ₽</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipping Info -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold">Данные получателя</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-start mb-3">
+                        <i class="fas fa-user text-muted mt-1 me-3" style="width: 20px;"></i>
+                        <div>
+                            <small class="text-muted d-block">Получатель</small>
+                            <strong>{{ order.customer.name }}</strong>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start mb-3">
+                        <i class="fas fa-map-marker-alt text-muted mt-1 me-3" style="width: 20px;"></i>
+                        <div>
+                            <small class="text-muted d-block">Адрес доставки</small>
+                            <span>{{ order.shipping_address }}</span>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start">
+                        <i class="fas fa-phone text-muted mt-1 me-3" style="width: 20px;"></i>
+                        <div>
+                            <small class="text-muted d-block">Телефон</small>
+                            <span>{{ order.customer.phone or 'Не указан' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Support -->
+            <div class="card bg-primary bg-opacity-10 border-0">
+                <div class="card-body p-4 text-center">
+                    <h6 class="fw-bold text-primary mb-2">Возникли вопросы?</h6>
+                    <p class="small text-muted mb-3">Если у вас есть вопросы по заказу или доставке, свяжитесь с нами.
+                    </p>
+                    <a href="{{ url_for('main.contact') }}" class="btn btn-outline-primary btn-sm fw-bold">
+                        Написать в поддержку
+                    </a>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>

@@ -1,266 +1,262 @@
 {% extends "base.html" %}
 
-{% block title %}{{ title }}{% endblock %}
+{% block title %}{{ product.name }}{% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Главная</a></li>
-            <li class="breadcrumb-item"><a href="{{ url_for('main.catalog') }}">Каталог</a></li>
-            {% if product.category %}
-            <li class="breadcrumb-item"><a href="{{ url_for('main.catalog', slug=product.category.slug) }}">{{
-                    product.category.name }}</a></li>
-            {% endif %}
-            <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
-        </ol>
-    </nav>
+<!-- Breadcrumbs -->
+<nav aria-label="breadcrumb" class="my-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Главная</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('main.catalog') }}">Каталог</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('main.catalog', slug=product.category.slug) }}">{{
+                product.category.name }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+    </ol>
+</nav>
 
-    <div class="row mt-4">
-        <div class="col-md-6">
-            <div class="product-image-container position-relative">
-                <img src="{{ url_for('static', filename='images/' + (images[0].image_url if images else 'default_product.png')) }}"
-                    alt="{{ product.name }}" class="img-fluid rounded-4 shadow-sm" id="main-product-image" loading="lazy">
-            </div>
-            {% if images|length > 1 %}
-            <div class="product-thumbnails mt-3 d-flex flex-wrap gap-2">
-                {% for image in images %}
-                <div class="p-1">
-                    <img src="{{ url_for('static', filename='images/' + image.image_url) }}"
-                        alt="Миниатюра {{ product.name }}" class="img-thumbnail rounded-3"
-                        style="width: 80px; height: 80px; object-fit: cover; cursor: pointer; border: 2px solid transparent;"
-                        onclick="document.getElementById('main-product-image').src=this.src;
-                                 document.querySelectorAll('.product-thumbnails img').forEach(img => img.style.borderColor = 'transparent');
-                                 this.style.borderColor = '#0d6efd';"
-                        loading="lazy">
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
+<div class="row g-5 mb-5">
+    <!-- Left Column: Gallery -->
+    <div class="col-lg-6">
+        <div class="product-gallery-main shadow-sm">
+            {% set first_img = images[0].image_url if images else 'default_product.png' %}
+            <img id="mainProductImage" src="{{ url_for('static', filename='images/' + first_img) }}"
+                alt="{{ product.name }}">
         </div>
-        <div class="col-md-6">
-            <h1 class="fw-bold">{{ product.name }}</h1>
-            <p class="text-muted fs-5">Артикул: {{ product.sku }}</p>
 
-            <div class="d-flex align-items-center mb-3">
-                <div class="me-3">
-                    {% for i in range(1, 6) %}<i
-                        class="fa-star {% if i <= avg_rating %}fa-solid text-warning{% elif i - 0.5 <= avg_rating %}fa-solid fa-star-half-stroke text-warning{% else %}fa-regular text-warning{% endif %}"></i>{%
-                    endfor %}
-                </div>
-                <span class="text-muted">({{ avg_rating|round(1) }} из 5, {{ reviews|length }} отзывов)</span>
-            </div>
-
-            <div class="d-flex align-items-center mb-4">
-                <span class="fs-3 fw-bold text-primary me-3">{{ "%.2f"|format(product.price) }} ₽</span>
-                {% if product.old_price %}
-                <span class="fs-5 text-muted text-decoration-line-through">{{ "%.2f"|format(product.old_price) }} ₽</span>
-                <span class="badge bg-danger ms-2">{{ ((product.old_price - product.price) / product.old_price * 100)|round(0) }}%</span>
-                {% endif %}
-            </div>
-
-            <div class="mb-4">
-                {% if product.in_stock > 10 %}
-                <span class="badge bg-success fs-6 px-3 py-2 rounded-3">В наличии</span>
-                <p class="text-success mt-2">Товар в наличии, можно купить прямо сейчас</p>
-                {% elif product.in_stock > 0 %}
-                <span class="badge bg-warning text-dark fs-6 px-3 py-2 rounded-3">Осталось мало</span>
-                <p class="text-warning mt-2">Только {{ product.in_stock }} шт. в наличии, торопитесь!</p>
-                {% else %}
-                <span class="badge bg-danger fs-6 px-3 py-2 rounded-3">Нет в наличии</span>
-                <p class="text-danger mt-2">Товар временно отсутствует</p>
-                {% endif %}
-            </div>
-
-            <div class="product-description mb-4">
-                <h4 class="mb-3">Описание</h4>
-                <p class="fs-6">{{ product.description }}</p>
-            </div>
-
-            <div class="d-flex flex-column flex-md-row align-items-md-center gap-3 mb-4">
-                <form action="{{ url_for('cart_app.add_to_cart', product_id=product.id) }}" method="POST" class="w-100">
-                    <div class="input-group">
-                        <label class="input-group-text" for="quantity">Количество:</label>
-                        <input type="number" name="quantity" id="quantity" class="form-control" value="1" min="1"
-                            max="{{ product.in_stock or 100 }}" {% if product.in_stock == 0 %}disabled{% endif %}>
-                        <button type="submit" class="btn btn-primary px-4 rounded-3" {% if product.in_stock==0 %}disabled{% endif %}>
-                            <i class="fa-solid fa-cart-plus me-2"></i>В корзину
-                        </button>
-                    </div>
-                </form>
-
-                {% if current_user.is_authenticated %}
-                {% set is_in_wishlist = product in current_user.wishlist.all() %}
-                <button class="btn btn-outline-danger wishlist-toggle-btn btn-lg px-4 rounded-3" data-product-id="{{ product.id }}"
-                    aria-label="Добавить в избранное">
-                    <i class="fa-heart {% if is_in_wishlist %}fa-solid{% else %}fa-regular{% endif %} me-1"></i>
-                    {% if is_in_wishlist %}В избранном{% else %}В избранное{% endif %}
-                </button>
-                {% endif %}
-            </div>
-
-            <div class="product-details border-top border-bottom py-3 mb-4">
-                <div class="row">
-                    <div class="col-md-6">
-                        <p><strong>Бренд:</strong> {{ product.brand.name if product.brand else 'Не указан' }}</p>
-                        <p><strong>Категория:</strong> {{ product.category.name if product.category else 'Не указана' }}</p>
-                    </div>
-                    <div class="col-md-6">
-                        {% if product.warranty %}
-                        <p><strong>Гарантия:</strong> {{ product.warranty }} мес.</p>
-                        {% endif %}
-                        {% if product.weight %}
-                        <p><strong>Вес:</strong> {{ product.weight }} кг</p>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-            <div class="share-section">
-                <p class="mb-2"><strong>Поделиться:</strong></p>
-                <div class="d-flex gap-2 flex-wrap">
-                    <a href="https://t.me/share/url?url={{ request.url|urlencode }}&text={{ product.name|urlencode }}"
-                        target="_blank" class="btn btn-outline-primary btn-sm rounded-3" aria-label="Поделиться в Telegram">
-                        <i class="fab fa-telegram me-1"></i> Telegram
-                    </a>
-                    <a href="https://vk.com/share.php?url={{ request.url|urlencode }}" target="_blank"
-                        class="btn btn-outline-primary btn-sm rounded-3" aria-label="Поделиться ВКонтакте">
-                        <i class="fab fa-vk me-1"></i> ВКонтакте
-                    </a>
-                    <a href="https://api.whatsapp.com/send?text={{ product.name|urlencode }}%20{{ request.url|urlencode }}"
-                        target="_blank" class="btn btn-outline-success btn-sm rounded-3" aria-label="Поделиться в WhatsApp">
-                        <i class="fab fa-whatsapp me-1"></i> WhatsApp
-                    </a>
-                    <button class="btn btn-outline-secondary btn-sm rounded-3" onclick="navigator.clipboard.writeText(window.location.href)" aria-label="Копировать ссылку">
-                        <i class="fas fa-link me-1"></i> Копировать
-                    </button>
-                </div>
-            </div>
+        {% if images|length > 1 %}
+        <div class="gallery-thumbs">
+            {% for img in images %}
+            <button class="gallery-thumb-btn {{ 'active' if loop.first else '' }}"
+                data-image-url="{{ url_for('static', filename='images/' + img.image_url) }}">
+                <img src="{{ url_for('static', filename='images/' + img.image_url) }}" alt="Thumbnail">
+            </button>
+            {% endfor %}
         </div>
+        {% endif %}
     </div>
 
-    <div class="row mt-5">
-        <div class="col-12">
-            <ul class="nav nav-tabs" id="productTab" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active rounded-3" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab">
-                        Отзывы ({{ reviews|length }})
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link rounded-3" id="related-tab" data-bs-toggle="tab" data-bs-target="#related" type="button" role="tab">
-                        Похожие товары
-                    </button>
-                </li>
-            </ul>
-            <div class="tab-content pt-4" id="productTabContent">
-                <div class="tab-pane fade show active" id="reviews" role="tabpanel">
-                    <div class="row">
-                        <div class="col-lg-8">
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <h4 class="mb-0">Отзывы покупателей</h4>
-                                <span class="fs-5">{{ avg_rating|round(1) }} из 5</span>
-                            </div>
+    <!-- Right Column: Info & Actions -->
+    <div class="col-lg-6">
+        <div class="mb-2">
+            {% if product.in_stock > 0 %}
+            <span
+                class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3">
+                <i class="fas fa-check-circle me-1"></i> В наличии
+            </span>
+            {% else %}
+            <span
+                class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 rounded-pill px-3">
+                Нет в наличии
+            </span>
+            {% endif %}
+            <span class="text-muted small ms-2">Артикул: {{ product.sku }}</span>
+        </div>
 
-                            {% if reviews %}
-                                {% for review in reviews %}
-                                <div class="review-card card mb-4 rounded-4 border-0 shadow-sm overflow-hidden">
-                                    <div class="card-body p-4">
-                                        <div class="d-flex justify-content-between">
-                                            <h5 class="card-title">{{ review.author.name }}</h5>
-                                            <div>
-                                                {% for i in range(5) %}
-                                                <i class="fa-star {% if i < review.rating %}fa-solid text-warning{% else %}fa-regular text-warning{% endif %}"></i>
-                                                {% endfor %}
-                                            </div>
-                                        </div>
-                                        <p class="card-text">{{ review.comment }}</p>
-                                        <small class="text-muted">Опубликовано: {{ review.created_at.strftime('%d.%m.%Y') }}</small>
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            {% else %}
-                                <div class="alert alert-info rounded-4">
-                                    <i class="fas fa-comment me-2"></i>Отзывов на этот товар пока нет. Будьте первым!
-                                </div>
-                            {% endif %}
-                        </div>
-                        <div class="col-lg-4">
-                            <div class="sticky-top" style="top: 100px;">
-                                <h4 class="mb-4">Оставить отзыв</h4>
-                                {% if current_user.is_authenticated %}
-                                    <form action="{% if product.slug %}{{ url_for('main.add_review', slug=product.slug) }}{% else %}{{ url_for('main.add_review', product_id=product.id) }}{% endif %}" method="POST" class="card p-4 rounded-4 border-0 shadow-sm">
-                                        {{ review_form.hidden_tag() }}
-                                        <div class="mb-3">
-                                            <label class="form-label">{{ review_form.rating.label }}</label>
-                                            <div class="rating-stars d-flex gap-1">
-                                                {% for subfield in review_form.rating %}
-                                                <div class="form-check form-check-inline">
-                                                    {{ subfield(class="form-check-input") }}
-                                                    {{ subfield.label(class="form-check-label") }}
-                                                </div>
-                                                {% endfor %}
-                                            </div>
-                                            {% for error in review_form.rating.errors %}
-                                                <div class="invalid-feedback d-block">{{ error }}</div>
-                                            {% endfor %}
-                                        </div>
-                                        <div class="mb-3">
-                                            {{ review_form.comment.label(class="form-label") }}
-                                            {{ review_form.comment(class="form-control rounded-3", rows=4, placeholder="Оставьте ваш отзыв о товаре...") }}
-                                        </div>
-                                        {{ review_form.submit(class="btn btn-primary rounded-3 w-100") }}
-                                    </form>
-                                {% else %}
-                                    <div class="alert alert-info rounded-4">
-                                        <i class="fas fa-sign-in-alt me-2"></i>Чтобы оставить отзыв, пожалуйста, <a href="{{ url_for('auth.login', next=request.url) }}">войдите в систему</a>.
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
+        <h1 class="fw-bold mb-3">{{ product.name }}</h1>
+
+        <div class="d-flex align-items-center mb-4">
+            <div class="text-warning me-2">
+                {% for i in range(5) %}
+                {% if i < avg_rating %} <i class="fas fa-star"></i>
+                    {% else %}
+                    <i class="far fa-star"></i>
+                    {% endif %}
+                    {% endfor %}
+            </div>
+            <span class="text-muted small">({{ reviews|length }} отзывов)</span>
+        </div>
+
+        <div class="mb-4">
+            <div class="d-flex align-items-end gap-2">
+                <span class="display-5 fw-bold text-primary">{{ "{:,.0f}".format(product.price).replace(',', ' ') }}
+                    ₽</span>
+                {% if product.old_price %}
+                <span class="fs-4 text-muted text-decoration-line-through mb-2">{{
+                    "{:,.0f}".format(product.old_price).replace(',', ' ') }} ₽</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <form action="{{ url_for('cart_app.add_to_cart', product_id=product.id) }}" method="post" class="mb-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <div class="quantity-control">
+                    <button type="button" class="quantity-btn" data-type="minus"><i
+                            class="fas fa-minus small"></i></button>
+                    <input type="number" name="quantity" class="quantity-input" value="1" min="1"
+                        max="{{ product.in_stock }}">
+                    <button type="button" class="quantity-btn" data-type="plus"><i
+                            class="fas fa-plus small"></i></button>
+                </div>
+                <div class="text-muted small">шт.</div>
+            </div>
+
+            <div class="d-grid d-md-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-lg px-5 flex-grow-1" {{ 'disabled' if
+                    product.in_stock==0 }}>
+                    <i class="fas fa-shopping-cart me-2"></i>
+                    {{ 'Добавить в корзину' if product.in_stock > 0 else 'Нет в наличии' }}
+                </button>
+
+                <!-- Wishlist Button -->
+                <button type="button" class="btn btn-outline-secondary btn-lg btn-wishlist"
+                    data-product-id="{{ product.id }}">
+                    {% if current_user.is_authenticated and product in current_user.wishlist.all() %}
+                    <i class="fas fa-heart text-danger"></i>
+                    {% else %}
+                    <i class="far fa-heart"></i>
+                    {% endif %}
+                </button>
+            </div>
+        </form>
+
+        <div class="card bg-light border-0 rounded-3">
+            <div class="card-body">
+                <div class="d-flex mb-3">
+                    <i class="fas fa-truck text-primary fs-4 me-3"></i>
+                    <div>
+                        <h6 class="mb-0 fw-bold">Быстрая доставка</h6>
+                        <small class="text-muted">Курьером по Москве или ТК по России</small>
                     </div>
                 </div>
-
-                <div class="tab-pane fade" id="related" role="tabpanel">
-                    <h4 class="mb-4">Похожие товары</h4>
-                    {% if related_products %}
-                    <div class="row g-4">
-                        {% for rel_prod in related_products %}
-                        <div class="col-md-6 col-lg-4">
-                            <div class="product-card card h-100 shadow-sm border-0 rounded-4 overflow-hidden animate__animated animate__fadeInUp">
-                                <a href="{{ url_for('main.product', slug=rel_prod.slug) }}" class="text-decoration-none">
-                                    <img src="{{ url_for('static', filename='images/' + rel_prod.first_image) }}"
-                                        alt="{{ rel_prod.name }}" class="card-img-top w-100" style="height: 220px; object-fit: cover; transition: transform 0.3s ease;" loading="lazy">
-                                </a>
-                                <div class="card-body d-flex flex-column p-4">
-                                    <h5 class="card-title flex-grow-1">
-                                        <a href="{{ url_for('main.product', slug=rel_prod.slug) }}" class="text-decoration-none text-dark">{{ rel_prod.name }}</a>
-                                    </h5>
-                                    <div class="product-price mt-2 mb-2">
-                                        <span class="current-price fw-bold fs-5 text-primary">{{ "%.2f"|format(rel_prod.price) }} ₽</span>
-                                    </div>
-                                    <div class="product-actions">
-                                        <form action="{{ url_for('cart_app.add_to_cart', product_id=rel_prod.id) }}" method="POST" class="w-100">
-                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                                            <button type="submit" class="btn btn-primary w-100 rounded-3" {% if rel_prod.in_stock==0 %}disabled{% endif %}>
-                                                <i class="fas fa-shopping-cart me-1"></i>В корзину
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
+                <div class="d-flex">
+                    <i class="fas fa-shield-alt text-success fs-4 me-3"></i>
+                    <div>
+                        <h6 class="mb-0 fw-bold">Гарантия производителя</h6>
+                        <small class="text-muted">Официальная гарантия на все товары</small>
                     </div>
-                    {% else %}
-                    <div class="text-center py-4">
-                        <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">Похожих товаров не найдено.</p>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Tabs: Description & Reviews -->
+<div class="row">
+    <div class="col-12">
+        <ul class="nav nav-tabs nav-fill mb-4" id="productTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active fw-bold" id="desc-tab" data-bs-toggle="tab" data-bs-target="#desc"
+                    type="button" role="tab">Описание</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link fw-bold" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews"
+                    type="button" role="tab">Отзывы <span class="badge bg-secondary rounded-pill ms-1">{{ reviews|length
+                        }}</span></button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="productTabsContent">
+            <!-- Description Tab -->
+            <div class="tab-pane fade show active" id="desc" role="tabpanel">
+                <div class="bg-surface p-4 rounded-3 border">
+                    <p class="lead">{{ product.description }}</p>
+                </div>
+            </div>
+
+            <!-- Reviews Tab -->
+            <div class="tab-pane fade" id="reviews" role="tabpanel">
+                <div class="row">
+                    <div class="col-lg-8">
+                        {% if reviews %}
+                        {% for review in reviews %}
+                        <div class="review-card">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="review-avatar me-3">
+                                        {{ review.author.name[0] | upper }}
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">{{ review.author.name }}</h6>
+                                        <small class="text-muted">{{ review.created_at.strftime('%d.%m.%Y') }}</small>
+                                    </div>
+                                </div>
+                                <div class="text-warning">
+                                    {% for i in range(review.rating) %}<i class="fas fa-star"></i>{% endfor %}
+                                </div>
+                            </div>
+                            <p class="mb-0">{{ review.comment }}</p>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="text-center py-5 bg-light rounded-3 mb-4">
+                            <i class="far fa-comment-dots fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Отзывов пока нет. Будьте первым!</p>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Review Form -->
+                    <div class="col-lg-4">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold mb-3">Оставить отзыв</h5>
+                                {% if current_user.is_authenticated %}
+                                <form action="{{ url_for('main.add_review', slug=product.slug) }}" method="post">
+                                    {{ review_form.hidden_tag() }}
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Ваша оценка</label>
+                                        <div class="rating-select d-flex flex-row-reverse justify-content-end gap-2">
+                                            {% for subfield in review_form.rating %}
+                                            {{ subfield(class="btn-check") }}
+                                            <label
+                                                class="btn btn-outline-warning rounded-circle p-0 d-flex align-items-center justify-content-center"
+                                                style="width: 35px; height: 35px;" for="{{ subfield.id }}">
+                                                {{ subfield.label.text }}
+                                            </label>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Комментарий</label>
+                                        {{ review_form.comment(class="form-control", rows=4, placeholder="Что вам
+                                        понравилось?") }}
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100">Отправить отзыв</button>
+                                </form>
+                                {% else %}
+                                <p class="text-muted mb-3">Чтобы оставить отзыв, необходимо войти в систему.</p>
+                                <a href="{{ url_for('auth.login', next=request.url) }}"
+                                    class="btn btn-outline-primary w-100">Войти</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Related Products -->
+{% if related_products %}
+<div class="mt-5 pt-4 border-top">
+    <h3 class="fw-bold mb-4">Похожие товары</h3>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4">
+        {% for related in related_products %}
+        <div class="col">
+            <div class="product-card bg-surface">
+                <div class="product-thumb-wrapper">
+                    <a href="{{ url_for('main.product', slug=related.slug) }}">
+                        <img src="{{ url_for('static', filename='images/' + related.first_image) }}"
+                            alt="{{ related.name }}" class="product-thumb">
+                    </a>
+                </div>
+                <div class="product-body">
+                    <div class="product-category small text-muted">{{ related.category.name }}</div>
+                    <a href="{{ url_for('main.product', slug=related.slug) }}" class="text-reset text-decoration-none">
+                        <h6 class="product-title small">{{ related.name }}</h6>
+                    </a>
+                    <div class="product-price fw-bold text-primary">
+                        {{ "{:,.0f}".format(related.price).replace(',', ' ') }} ₽
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
 {% endblock %}

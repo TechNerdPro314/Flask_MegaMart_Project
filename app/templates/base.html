@@ -5,576 +5,258 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ title }} - MegaMart</title>
+
+    <title>{% block title %}MegaMart{% endblock %} - Магазин сантехники</title>
     <meta name="description"
         content="{{ meta_description or 'Интернет-магазин сантехники MegaMart: широкий выбор, гарантия качества, доставка по всей России.' }}">
-    <!-- Open Graph -->
+
+    <!-- Open Graph & Meta -->
     <meta property="og:title" content="{{ title }} - MegaMart">
-    <meta property="og:description"
-        content="{{ meta_description or 'Лучшая сантехника для вашего дома от ведущих брендов.' }}">
+    <meta property="og:description" content="{{ meta_description or 'Лучшая сантехника для вашего дома.' }}">
     <meta property="og:image"
         content="{{ meta_image or url_for('static', filename='images/og_image.png', _external=True) }}">
-    <meta property="og:url" content="{{ request.url }}">
     <meta property="og:type" content="website">
-    <meta property="og:site_name" content="MegaMart">
-    <!-- PWA -->
+
+    <!-- PWA Manifest -->
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <meta name="theme-color" content="#0d6efd">
-    <!-- Bootstrap CSS -->
+    <meta name="theme-color" content="#0f4c81">
+
+    <!-- Fonts: Manrope (Modern & Technical) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap CSS (CDN) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome Icons -->
+
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <!-- Animate.css for animations -->
+
+    <!-- Animate.css -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    <!-- НАШ CSS (через Flask-Assets) -->
+
+    <!-- Custom CSS (Bundled or Direct) -->
     {% assets "css_all" %}
-    <link rel="stylesheet" href="{{ ASSET_URL }}">{% endassets %}
-    <style>
-        :root {
-            --primary-color: #0d6efd;
-            --secondary-color: #6c757d;
-            --success-color: #198754;
-            --info-color: #0dcaf0;
-            --warning-color: #ffc107;
-            --danger-color: #dc3545;
-            --light-color: #f8f9fa;
-            --dark-color: #212529;
-            --body-bg: #f8fafc;
-            --border-radius: 8px;
-            --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-            --shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-            --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
-        }
-
-        [data-bs-theme="dark"] {
-            --body-bg: #121212;
-        }
-
-        body {
-            background-color: var(--body-bg);
-            transition: background-color 0.3s ease;
-        }
-
-        .navbar {
-            box-shadow: var(--shadow-md);
-            background-color: rgba(255, 255, 255, 0.95) !important;
-            backdrop-filter: blur(10px);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        [data-bs-theme="dark"] .navbar {
-            background-color: rgba(33, 37, 41, 0.95) !important;
-        }
-
-        .navbar-brand {
-            font-weight: 700;
-            font-size: 1.75rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .nav-link {
-            font-weight: 500;
-            transition: all 0.3s;
-            border-radius: var(--border-radius);
-            padding: 0.5rem 1rem !important;
-            margin: 0.25rem 0;
-        }
-
-        .nav-link:hover {
-            color: var(--primary-color) !important;
-            background-color: rgba(13, 110, 253, 0.1);
-        }
-
-        [data-bs-theme="dark"] .nav-link:hover {
-            background-color: rgba(13, 110, 253, 0.15);
-        }
-
-        .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-            border-radius: var(--border-radius);
-            padding: 0.5rem 1.25rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary:hover {
-            background-color: #0b5ed7;
-            border-color: #0a58ca;
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .footer {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            margin-top: 3rem;
-            padding: 3rem 0 0;
-        }
-
-        [data-bs-theme="dark"] .footer {
-            background: linear-gradient(135deg, #212529 0%, #343a40 100%);
-            color: #adb5bd;
-        }
-
-        .footer a:hover {
-            color: var(--primary-color) !important;
-            text-decoration: none;
-        }
-
-        .cart-count {
-            position: relative;
-            top: -10px;
-            left: -8px;
-            font-size: 0.75rem;
-            min-width: 22px;
-            height: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .main-content {
-            min-height: 70vh;
-            padding: 2rem 0;
-        }
-
-        .card {
-            border: none;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-sm);
-            transition: all 0.3s ease;
-            overflow: hidden;
-        }
-
-        .card:hover {
-            box-shadow: var(--shadow-md);
-            transform: translateY(-5px);
-        }
-
-        .animate__animated {
-            --animate-duration: 0.8s;
-        }
-
-        .theme-toggle-btn {
-            border: none;
-            background: none;
-            color: #6c757d;
-            font-size: 1.25rem;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-
-        .theme-toggle-btn:hover {
-            background-color: rgba(13, 110, 253, 0.1);
-            color: var(--primary-color);
-        }
-
-        .search-container {
-            position: relative;
-        }
-
-        .search-container .input-group {
-            border-radius: 50px;
-            overflow: hidden;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .search-container .form-control {
-            border: none;
-            padding: 0.75rem 1rem;
-        }
-
-        .search-container .btn {
-            border-radius: 0 50px 50px 0;
-            padding: 0.75rem 1.5rem;
-        }
-
-        .hero-section {
-            background: linear-gradient(135deg, var(--primary-color) 0%, #0b5ed7 100%);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-section::before {
-            content: "";
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
-            transform: rotate(30deg);
-        }
-
-        .section-title {
-            position: relative;
-            display: inline-block;
-            margin-bottom: 2.5rem;
-        }
-
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 3px;
-            background: var(--primary-color);
-            border-radius: 3px;
-        }
-
-        .breadcrumb {
-            background-color: transparent;
-            padding: 0;
-            margin: 0;
-        }
-
-        .form-control, .form-select {
-            border-radius: var(--border-radius);
-            padding: 0.75rem 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-        }
-
-        .btn {
-            border-radius: var(--border-radius);
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .btn-lg {
-            padding: 0.75rem 1.5rem;
-            font-size: 1.1rem;
-        }
-
-        .badge {
-            border-radius: 50px;
-        }
-
-        .table {
-            border-collapse: separate;
-            border-spacing: 0;
-        }
-
-        .table th {
-            border-top: none;
-            font-weight: 600;
-        }
-
-        .table td, .table th {
-            padding: 1rem;
-            vertical-align: middle;
-        }
-
-        /* Modern dropdown styling */
-        .dropdown-menu {
-            border: none;
-            box-shadow: var(--shadow-lg);
-            border-radius: var(--border-radius);
-            padding: 0.5rem 0;
-        }
-
-        .dropdown-item {
-            padding: 0.5rem 1.5rem;
-            transition: all 0.2s ease;
-        }
-
-        .dropdown-item:hover {
-            background-color: rgba(13, 110, 253, 0.1);
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 991.98px) {
-            .navbar-collapse {
-                background: white;
-                padding: 1rem;
-                border-radius: var(--border-radius);
-                box-shadow: var(--shadow-md);
-                margin-top: 0.5rem;
-            }
-
-            [data-bs-theme="dark"] .navbar-collapse {
-                background: #343a40;
-            }
-
-            .nav-link {
-                margin: 0.5rem 0 !important;
-            }
-
-            .footer {
-                padding: 2rem 0;
-            }
-        }
-
-        /* Sticky footer */
-        body {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        main {
-            flex: 1;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ ASSET_URL }}">
+    {% endassets %}
 </head>
 
 <body data-sw-url="{{ url_for('main.service_worker') }}">
-    <header>
-        <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
+
+    <!-- Header / Navbar -->
+    <header class="sticky-top">
+        <nav class="navbar navbar-expand-lg navbar-glass">
             <div class="container">
-                <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.index') }}">
-                    <i class="fa-solid fa-water-ladder me-2 text-primary"></i>
-                    <span class="fw-bold text-primary">MegaMart</span>
+                <!-- Brand -->
+                <a class="navbar-brand animate__animated animate__fadeInLeft" href="{{ url_for('main.index') }}">
+                    <i class="fa-solid fa-faucet-drip"></i>
+                    <span>MegaMart</span>
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+
+                <!-- Mobile Toggle -->
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarContent">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+                <!-- Nav Content -->
+                <div class="collapse navbar-collapse" id="navbarContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" href="{{ url_for('main.index') }}">
-                                <i class="fas fa-home me-1"></i>Главная
-                            </a>
+                            <a class="nav-link" href="{{ url_for('main.index') }}">Главная</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" href="{{ url_for('main.catalog') }}">
-                                <i class="fas fa-list me-1"></i>Каталог товаров
-                            </a>
+                            <a class="nav-link" href="{{ url_for('main.catalog') }}">Каталог</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" href="{{ url_for('main.about') }}">
-                                <i class="fas fa-info-circle me-1"></i>О нас
-                            </a>
+                            <a class="nav-link" href="{{ url_for('main.about') }}">О нас</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" href="{{ url_for('main.contact') }}">
-                                <i class="fas fa-phone me-1"></i>Контакты
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="{{ url_for('main.shipping') }}">
-                                <i class="fas fa-truck me-1"></i>Доставка
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="{{ url_for('main.track_order') }}">
-                                <i class="fas fa-search me-1"></i>Отследить заказ
-                            </a>
+                            <a class="nav-link" href="{{ url_for('main.shipping') }}">Доставка</a>
                         </li>
                     </ul>
-                    <form class="d-flex me-3 my-2 my-lg-0 search-container" method="GET" action="{{ url_for('main.catalog') }}" id="search-form">
+
+                    <!-- Search Form -->
+                    <form class="d-flex me-lg-3 mb-3 mb-lg-0" action="{{ url_for('main.catalog') }}" method="get">
                         <div class="input-group">
-                            <input class="form-control py-2 border-end-0 border" type="search" placeholder="Поиск по сантехнике" name="search_query" id="search-input" value="{{ request.args.get('search_query', '') }}" autocomplete="off">
-                            <button class="btn btn-primary" type="submit">
+                            <input class="form-control border-end-0 rounded-start-pill ps-3" type="search"
+                                name="search_query" placeholder="Поиск товаров..." aria-label="Search">
+                            <button class="btn btn-outline-secondary border-start-0 rounded-end-pill" type="submit">
                                 <i class="fas fa-search"></i>
                             </button>
                         </div>
-                        <div id="autocomplete-container"></div>
                     </form>
-                    <ul class="navbar-nav d-flex align-items-center">
-                        <li class="nav-item me-3">
-                            <a class="nav-link text-dark position-relative" href="{{ url_for('cart_app.cart_view') }}">
-                                <i class="fa-solid fa-cart-shopping fa-lg"></i>
-                                <span class="badge bg-primary rounded-pill cart-count position-absolute top-0 start-100 translate-middle" {% if cart_count==0 %}style="display: none;" {% endif %}>
-                                    {% set cart_count = current_user.cart_items.count() if current_user.is_authenticated else (session['cart']|length if 'cart' in session else 0) %}
-                                    {{ cart_count }}
-                                </span>
-                                <span class="d-lg-none ms-1">Корзина</span>
-                            </a>
-                        </li>
-                        <li class="nav-item dropdown me-3">
+
+                    <!-- Right Actions -->
+                    <div class="d-flex align-items-center gap-3">
+                        <!-- Theme Toggle -->
+                        <button class="theme-toggle-btn" id="theme-toggle" aria-label="Переключить тему">
+                            <i class="fas fa-moon"></i>
+                        </button>
+
+                        <!-- Wishlist -->
+                        <a href="{{ url_for('main.wishlist') }}"
+                            class="btn btn-outline-danger border-0 position-relative rounded-circle p-2 me-2"
+                            style="width: 40px; height: 40px;" title="Избранное">
+                            <i class="far fa-heart"></i>
                             {% if current_user.is_authenticated %}
-                            <a class="nav-link dropdown-toggle text-dark d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fa-solid fa-user me-1"></i>
-                                <span class="d-none d-lg-block">{{ current_user.name or 'Профиль' }}</span>
-                                <span class="d-lg-none">Профиль</span>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}"><i class="fas fa-user-circle me-2"></i>Личный кабинет</a></li>
-                                {% if current_user.is_admin %}
-                                <li><a class="dropdown-item text-danger" href="{{ url_for('admin.index') }}"><i class="fas fa-cog me-2"></i>Админ-панель</a></li>
-                                {% endif %}
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt me-2"></i>Выход</a></li>
-                            </ul>
-                            {% else %}
-                            <a class="nav-link text-dark" href="{{ url_for('auth.login') }}">
-                                <i class="fa-solid fa-right-to-bracket me-1"></i>
-                                <span class="d-none d-lg-block">Войти</span>
-                                <span class="d-lg-none">Войти</span>
-                            </a>
+                            {% set wishlist_count = current_user.wishlist.count() %}
+                            <span
+                                class="cart-badge bg-danger wishlist-count {{ 'd-none' if wishlist_count == 0 else '' }}">{{
+                                wishlist_count }}</span>
                             {% endif %}
-                        </li>
-                        <li class="nav-item">
-                            <button id="theme-toggle" class="btn theme-toggle-btn" title="Сменить тему" aria-label="Сменить тему">
-                                <i class="fa-solid fa-moon" id="theme-icon"></i>
+                        </a>
+
+                        <!-- Cart -->
+                        <a href="{{ url_for('cart_app.cart_view') }}"
+                            class="btn btn-outline-primary border-0 position-relative rounded-circle p-2"
+                            style="width: 40px; height: 40px;">
+                            <i class="fas fa-shopping-cart"></i>
+                            {% set cart_count = current_user.cart_items.count() if current_user.is_authenticated else
+                            session.get('cart', {})|length %}
+                            {% if cart_count > 0 %}
+                            <span class="cart-badge">{{ cart_count }}</span>
+                            {% endif %}
+                        </a>
+
+                        <!-- User Menu -->
+                        {% if current_user.is_authenticated %}
+                        <div class="dropdown">
+                            <button class="btn btn-primary dropdown-toggle rounded-pill px-3" type="button"
+                                id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-circle me-1"></i>
+                                {{ current_user.name.split()[0] }}
                             </button>
-                        </li>
-                    </ul>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0"
+                                aria-labelledby="userDropdown">
+                                {% if current_user.is_admin %}
+                                <li><a class="dropdown-item" href="{{ url_for('admin.index') }}"><i
+                                            class="fas fa-cogs me-2 text-muted"></i>Админка</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                {% endif %}
+                                <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}"><i
+                                            class="fas fa-user me-2 text-muted"></i>Профиль</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('main.wishlist') }}"><i
+                                            class="fas fa-heart me-2 text-muted"></i>Избранное</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}"><i
+                                            class="fas fa-sign-out-alt me-2 text-muted"></i>Выйти</a></li>
+                            </ul>
+                        </div>
+                        {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-primary rounded-pill px-4">Войти</a>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </nav>
     </header>
 
-    <main class="main-content">
-        <div class="container">
+    <!-- Main Content -->
+    <main>
+        <div class="container flash-container">
             {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show mb-4 animate__animated animate__fadeInDown" role="alert">
-                            <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'error' %}fa-exclamation-circle{% elif category == 'info' %}fa-info-circle{% else %}fa-exclamation-triangle{% endif %} me-2"></i>
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm rounded-3 border-0 mb-4"
+                role="alert">
+                <div class="d-flex align-items-center">
+                    {% if category == 'success' %}
+                    <i class="fas fa-check-circle fs-4 me-3 text-success"></i>
+                    {% elif category == 'danger' %}
+                    <i class="fas fa-exclamation-circle fs-4 me-3 text-danger"></i>
+                    {% elif category == 'warning' %}
+                    <i class="fas fa-exclamation-triangle fs-4 me-3 text-warning"></i>
+                    {% else %}
+                    <i class="fas fa-info-circle fs-4 me-3 text-info"></i>
+                    {% endif %}
+                    <div>{{ message }}</div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
             {% endwith %}
+
             {% block content %}{% endblock %}
         </div>
     </main>
 
-    <footer class="footer mt-auto py-5">
+    <!-- Footer -->
+    <footer class="footer">
         <div class="container">
-            <div class="row">
-                <div class="col-md-4 mb-4 mb-md-0">
-                    <h4 class="text-primary fw-bold mb-4">
-                        <i class="fa-solid fa-water-ladder me-2"></i>MegaMart
-                    </h4>
+            <div class="row g-4">
+                <!-- Column 1: Brand -->
+                <div class="col-lg-4 col-md-6">
+                    <a href="{{ url_for('main.index') }}" class="d-flex align-items-center mb-3 text-decoration-none">
+                        <i class="fa-solid fa-faucet-drip fs-3 text-primary me-2"></i>
+                        <span class="fs-4 fw-bold text-body">MegaMart</span>
+                    </a>
                     <p class="text-muted mb-4">
-                        Ваш надежный поставщик сантехники. Широкий выбор, гарантия качества, доставка по всей России.
+                        Ваш надежный партнер в мире качественной сантехники. Мы предлагаем только сертифицированные
+                        товары от ведущих мировых брендов.
                     </p>
                     <div class="d-flex gap-3">
-                        <a href="#" class="text-muted"><i class="fab fa-vk fa-lg"></i></a>
-                        <a href="#" class="text-muted"><i class="fab fa-telegram fa-lg"></i></a>
-                        <a href="#" class="text-muted"><i class="fab fa-whatsapp fa-lg"></i></a>
+                        <a href="#" class="btn btn-light btn-sm rounded-circle text-primary"><i
+                                class="fab fa-vk"></i></a>
+                        <a href="#" class="btn btn-light btn-sm rounded-circle text-primary"><i
+                                class="fab fa-telegram"></i></a>
+                        <a href="#" class="btn btn-light btn-sm rounded-circle text-primary"><i
+                                class="fab fa-youtube"></i></a>
                     </div>
                 </div>
-                <div class="col-md-2 mb-4 mb-md-0">
-                    <h5 class="fw-bold mb-4">Компания</h5>
+
+                <!-- Column 2: Navigation -->
+                <div class="col-lg-2 col-md-6">
+                    <h5 class="footer-heading">Магазин</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><a href="{{ url_for('main.about') }}" class="text-muted text-decoration-none">О нас</a></li>
-                        <li class="mb-2"><a href="{{ url_for('main.contact') }}" class="text-muted text-decoration-none">Контакты</a></li>
-                        <li class="mb-2"><a href="{{ url_for('main.shipping') }}" class="text-muted text-decoration-none">Доставка</a></li>
-                        <li><a href="{{ url_for('main.track_order') }}" class="text-muted text-decoration-none">Отследить заказ</a></li>
+                        <li><a href="{{ url_for('main.catalog') }}" class="footer-link">Каталог</a></li>
+                        <li><a href="#" class="footer-link">Акции</a></li>
+                        <li><a href="#" class="footer-link">Бренды</a></li>
+                        <li><a href="#" class="footer-link">Новинки</a></li>
                     </ul>
                 </div>
-                <div class="col-md-2 mb-4 mb-md-0">
-                    <h5 class="fw-bold mb-4">Покупателю</h5>
+
+                <!-- Column 3: Info -->
+                <div class="col-lg-2 col-md-6">
+                    <h5 class="footer-heading">Компания</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><a href="{{ url_for('main.catalog') }}" class="text-muted text-decoration-none">Каталог</a></li>
-                        {% if current_user.is_authenticated %}
-                        <li class="mb-2"><a href="{{ url_for('auth.profile') }}" class="text-muted text-decoration-none">Личный кабинет</a></li>
-                        {% else %}
-                        <li class="mb-2"><a href="{{ url_for('auth.register') }}" class="text-muted text-decoration-none">Регистрация</a></li>
-                        <li class="mb-2"><a href="{{ url_for('auth.login') }}" class="text-muted text-decoration-none">Вход</a></li>
-                        {% endif %}
-                        <li><a href="{{ url_for('cart_app.cart_view') }}" class="text-muted text-decoration-none">Корзина</a></li>
+                        <li><a href="{{ url_for('main.about') }}" class="footer-link">О нас</a></li>
+                        <li><a href="{{ url_for('main.shipping') }}" class="footer-link">Доставка</a></li>
+                        <li><a href="{{ url_for('main.contact') }}" class="footer-link">Контакты</a></li>
+                        <li><a href="#" class="footer-link">Политика</a></li>
                     </ul>
                 </div>
-                <div class="col-md-4">
-                    <h5 class="fw-bold mb-4">Контакты</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2">
-                            <i class="fas fa-phone text-primary me-2"></i>
-                            <span class="text-muted">+7 (495) 123-45-67</span>
-                        </li>
-                        <li class="mb-2">
-                            <i class="fas fa-envelope text-primary me-2"></i>
-                            <span class="text-muted">info@megamart.com</span>
-                        </li>
-                        <li class="mb-2">
-                            <i class="fas fa-map-marker-alt text-primary me-2"></i>
-                            <span class="text-muted">г. Москва, ул. Примерная, д. 123</span>
-                        </li>
+
+                <!-- Column 4: Contacts -->
+                <div class="col-lg-4 col-md-6">
+                    <h5 class="footer-heading">Контакты</h5>
+                    <ul class="list-unstyled text-muted">
+                        <li class="mb-2"><i class="fas fa-phone me-2 text-primary"></i> 8 (800) 555-35-35</li>
+                        <li class="mb-2"><i class="fas fa-envelope me-2 text-primary"></i> info@megamart.ru</li>
+                        <li class="mb-2"><i class="fas fa-map-marker-alt me-2 text-primary"></i> г. Москва, ул. Пушкина,
+                            д. 10</li>
                     </ul>
-                    <div class="mt-4">
-                        <h6 class="fw-bold mb-3">Мы принимаем:</h6>
-                        <div class="d-flex gap-2 flex-wrap">
-                            <div class="payment-icon"><i class="fab fa-cc-visa fa-2x text-muted"></i></div>
-                            <div class="payment-icon"><i class="fab fa-cc-mastercard fa-2x text-muted"></i></div>
-                            <div class="payment-icon"><i class="fab fa-cc-amex fa-2x text-muted"></i></div>
-                            <div class="payment-icon"><i class="fab fa-apple-pay fa-2x text-muted"></i></div>
-                            <div class="payment-icon"><i class="fab fa-google-pay fa-2x text-muted"></i></div>
-                        </div>
-                    </div>
                 </div>
             </div>
-            <div class="border-top mt-5 pt-4 text-center">
-                <p class="text-muted small mb-0">&copy; {{ now().year }} MegaMart. Все права защищены.</p>
+
+            <div class="border-top mt-5 pt-4 text-center text-muted small">
+                <p>&copy; {{ now().year }} MegaMart. Все права защищены.</p>
             </div>
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JS (Bundled or Direct) -->
     {% assets "js_all" %}
-    <script type="text/javascript" src="{{ ASSET_URL }}" defer></script>{% endassets %}
-    {% if config.GOOGLE_ANALYTICS_ID %}
-    <script async src="https://www.googletagmanager.com/gtag/js?id={{ config.GOOGLE_ANALYTICS_ID }}"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-        gtag('config', '{{ config.GOOGLE_ANALYTICS_ID }}');
-    </script>
-    {% endif %}
+    <script src="{{ ASSET_URL }}"></script>
+    {% endassets %}
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const themeToggle = document.getElementById('theme-toggle');
-            const themeIcon = document.getElementById('theme-icon');
-            const themeToggleBtn = document.querySelector('#theme-toggle');
-
-            // Check saved theme preference or default to 'light'
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-            // Set initial theme based on preference
-            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-                document.documentElement.setAttribute('data-bs-theme', 'dark');
-                themeIcon.classList.remove('fa-moon');
-                themeIcon.classList.add('fa-sun');
-            } else {
-                document.documentElement.setAttribute('data-bs-theme', 'light');
-                themeIcon.classList.remove('fa-sun');
-                themeIcon.classList.add('fa-moon');
-            }
-
-            // Toggle theme when button is clicked
-            if (themeToggle) {
-                themeToggle.addEventListener('click', function() {
-                    const currentTheme = document.documentElement.getAttribute('data-bs-theme');
-                    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-
-                    document.documentElement.setAttribute('data-bs-theme', newTheme);
-                    localStorage.setItem('theme', newTheme);
-
-                    // Update icon
-                    if (newTheme === 'dark') {
-                        themeIcon.classList.remove('fa-moon');
-                        themeIcon.classList.add('fa-sun');
-                    } else {
-                        themeIcon.classList.remove('fa-sun');
-                        themeIcon.classList.add('fa-moon');
-                    }
-                });
-            }
-        });
-    </script>
+    {% block scripts %}{% endblock %}
 </body>
 
 </html>

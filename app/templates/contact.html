@@ -3,113 +3,206 @@
 {% block title %}Контакты{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<section class="hero-section bg-primary text-white py-5">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-8 mx-auto text-center">
-                <h1 class="hero-title display-4 fw-bold mb-3 animate__animated animate__fadeInUp">Свяжитесь с нами</h1>
-                <p class="hero-subtitle fs-4 mb-0 animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
-                    Мы рады ответить на ваши вопросы и помочь с выбором
-                </p>
+<div class="container py-4">
+
+    <!-- 1. Header -->
+    <div class="text-center mb-5 animate__animated animate__fadeIn">
+        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2 mb-3">
+            Свяжитесь с нами
+        </span>
+        <h1 class="display-5 fw-bold mb-3">Мы всегда <span class="text-gradient">на связи</span></h1>
+        <p class="lead text-muted mx-auto" style="max-width: 600px;">
+            Есть вопросы по ассортименту или доставке? Наши специалисты готовы помочь вам ежедневно с 9:00 до 21:00.
+        </p>
+    </div>
+
+    <!-- 2. Info Cards Grid -->
+    <div class="row g-4 mb-5">
+        <!-- Phone -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 border-0 shadow-sm text-center hover-lift transition-all">
+                <div class="card-body p-4">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle mb-3"
+                        style="width: 64px; height: 64px;">
+                        <i class="fas fa-phone-alt fa-lg"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Позвоните нам</h5>
+                    <p class="text-muted small mb-3">Оперативная консультация</p>
+                    <a href="tel:88005553535" class="fw-bold text-decoration-none stretched-link">8 (800) 555-35-35</a>
+                </div>
             </div>
         </div>
-    </div>
-</section>
 
-<!-- Main Content -->
-<section class="py-5">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-10 mx-auto">
-                <div class="row g-4 mb-5">
-                    <div class="col-md-4">
-                        <div class="contact-card text-center p-4 h-100 shadow-sm rounded-3">
-                            <div class="contact-icon bg-primary rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
-                                <i class="fa-solid fa-phone text-white fa-2x"></i>
-                            </div>
-                            <h5 class="fw-bold">Телефон</h5>
-                            <p class="mb-0 fw-bold fs-5">+7 (495) 123-45-67</p>
-                            <p class="text-muted mb-0">Пн-Пт: 9:00 - 18:00 МСК</p>
-                        </div>
+        <!-- Email -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 border-0 shadow-sm text-center hover-lift transition-all">
+                <div class="card-body p-4">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success rounded-circle mb-3"
+                        style="width: 64px; height: 64px;">
+                        <i class="fas fa-envelope fa-lg"></i>
                     </div>
-
-                    <div class="col-md-4">
-                        <div class="contact-card text-center p-4 h-100 shadow-sm rounded-3">
-                            <div class="contact-icon bg-success rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
-                                <i class="fa-solid fa-envelope text-white fa-2x"></i>
-                            </div>
-                            <h5 class="fw-bold">Email</h5>
-                            <p class="mb-0 fw-bold fs-5">support@megamart.com</p>
-                            <p class="text-muted mb-0">Отвечаем в течение 1 часа</p>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="contact-card text-center p-4 h-100 shadow-sm rounded-3">
-                            <div class="contact-icon bg-info rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
-                                <i class="fa-solid fa-location-dot text-white fa-2x"></i>
-                            </div>
-                            <h5 class="fw-bold">Адрес офиса</h5>
-                            <p class="mb-0 fw-bold">г. Москва, ул. Примерная, 1</p>
-                            <p class="text-muted mb-0">Склад работает по предзаказу</p>
-                        </div>
-                    </div>
+                    <h5 class="fw-bold mb-2">Напишите нам</h5>
+                    <p class="text-muted small mb-3">Для заказов и вопросов</p>
+                    <a href="mailto:info@megamart.ru"
+                        class="fw-bold text-decoration-none stretched-link">info@megamart.ru</a>
                 </div>
+            </div>
+        </div>
 
-                <div class="row">
-                    <div class="col-lg-8">
-                        <div class="card shadow-lg rounded-3">
-                            <div class="card-body p-5">
-                                <h4 class="card-title text-center mb-4 fw-bold">Форма обратной связи</h4>
-                                <form>
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <label for="name" class="form-label fw-bold">Ваше имя</label>
-                                            <input type="text" class="form-control form-control-lg" id="name" required placeholder="Введите ваше имя">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="email" class="form-label fw-bold">Ваш Email</label>
-                                            <input type="email" class="form-control form-control-lg" id="email" required placeholder="Введите ваш email">
-                                        </div>
-                                    </div>
-                                    <div class="mt-3">
-                                        <label for="subject" class="form-label fw-bold">Тема сообщения</label>
-                                        <input type="text" class="form-control form-control-lg" id="subject" required placeholder="Укажите тему">
-                                    </div>
-                                    <div class="mt-3">
-                                        <label for="message" class="form-label fw-bold">Сообщение</label>
-                                        <textarea class="form-control form-control-lg" id="message" rows="5" required placeholder="Введите ваше сообщение"></textarea>
-                                    </div>
-                                    <div class="d-grid mt-4">
-                                        <button type="submit" class="btn btn-primary btn-lg disabled">
-                                            <i class="fa-solid fa-paper-plane me-2"></i>Отправить сообщение
-                                        </button>
-                                        <small class="text-muted mt-2">Функционал пока не подключен</small>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
+        <!-- Address -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 border-0 shadow-sm text-center hover-lift transition-all">
+                <div class="card-body p-4">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-warning bg-opacity-10 text-warning rounded-circle mb-3"
+                        style="width: 64px; height: 64px;">
+                        <i class="fas fa-map-marker-alt fa-lg"></i>
                     </div>
-                    <div class="col-lg-4">
-                        <div class="map-placeholder bg-light rounded-3 p-4 h-100 d-flex flex-column">
-                            <h5 class="fw-bold mb-4">Наш офис</h5>
-                            <div class="map-image bg-white rounded p-3 flex-grow-1 d-flex align-items-center justify-content-center">
-                                <i class="fa-solid fa-map-marked-alt fa-5x text-primary"></i>
-                            </div>
-                            <p class="mt-3 mb-0">
-                                <i class="fas fa-map-marker-alt me-2 text-primary"></i>
-                                г. Москва, ул. Примерная, д. 123
-                            </p>
-                            <p class="mb-0">
-                                <i class="fas fa-clock me-2 text-primary"></i>
-                                Пн-Пт: 9:00 - 18:00
-                            </p>
-                        </div>
+                    <h5 class="fw-bold mb-2">Наш офис</h5>
+                    <p class="text-muted small mb-3">Шоурум и самовывоз</p>
+                    <span class="fw-bold text-dark">г. Москва, ул. Пушкина, 10</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Working Hours -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 border-0 shadow-sm text-center hover-lift transition-all">
+                <div class="card-body p-4">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-info bg-opacity-10 text-info rounded-circle mb-3"
+                        style="width: 64px; height: 64px;">
+                        <i class="fas fa-clock fa-lg"></i>
                     </div>
+                    <h5 class="fw-bold mb-2">Режим работы</h5>
+                    <p class="text-muted small mb-3">Без выходных</p>
+                    <span class="fw-bold text-dark">Ежедневно: 09:00 - 21:00</span>
                 </div>
             </div>
         </div>
     </div>
-</section>
+
+    <!-- 3. Form & Map Section -->
+    <div class="row g-5 mb-5">
+        <!-- Contact Form -->
+        <div class="col-lg-6 animate__animated animate__fadeInLeft">
+            <div class="bg-surface p-4 p-lg-5 rounded-4 border shadow-sm h-100">
+                <h3 class="fw-bold mb-4">Остались вопросы?</h3>
+                <p class="text-muted mb-4">Заполните форму, и наш менеджер свяжется с вами в течение 15 минут.</p>
+
+                <form>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control bg-light border-0" id="name"
+                                    placeholder="Ваше имя">
+                                <label for="name">Ваше имя</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="email" class="form-control bg-light border-0" id="email"
+                                    placeholder="Email">
+                                <label for="email">Email</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-floating">
+                                <select class="form-select bg-light border-0" id="subject">
+                                    <option selected>Вопрос по товару</option>
+                                    <option value="1">Статус заказа</option>
+                                    <option value="2">Сотрудничество</option>
+                                    <option value="3">Другое</option>
+                                </select>
+                                <label for="subject">Тема обращения</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-floating">
+                                <textarea class="form-control bg-light border-0" placeholder="Ваше сообщение"
+                                    id="message" style="height: 150px"></textarea>
+                                <label for="message">Сообщение</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary btn-lg w-100 py-3 fw-bold">
+                                <i class="fas fa-paper-plane me-2"></i> Отправить сообщение
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Map -->
+        <div class="col-lg-6 animate__animated animate__fadeInRight">
+            <div class="h-100 rounded-4 overflow-hidden shadow-lg border position-relative" style="min-height: 450px;">
+                <!-- Заглушка карты (iframe Яндекс.Карт или Google Maps) -->
+                <!-- Здесь вставлен iframe Яндекс.Карт для примера центра Москвы -->
+                <iframe
+                    src="https://yandex.ru/map-widget/v1/?um=constructor%3A0d834131c28860283593d406252d244015469c585629658564711834420904&amp;source=constructor"
+                    width="100%" height="100%" frameborder="0" style="border:0; filter: grayscale(0.2);"
+                    allowfullscreen>
+                </iframe>
+
+                <!-- Map Overlay Card (Optional decoration) -->
+                <div class="position-absolute bottom-0 start-0 m-3 bg-white p-3 rounded-3 shadow-sm d-none d-md-block"
+                    style="max-width: 200px;">
+                    <small class="text-muted d-block mb-1">Центральный офис</small>
+                    <div class="fw-bold text-dark">MegaMart HQ</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. FAQ Accordion (Optional) -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h3 class="fw-bold text-center mb-4">Частые вопросы</h3>
+            <div class="accordion shadow-sm rounded-3 overflow-hidden" id="faqAccordion">
+                <div class="accordion-item border-0 border-bottom">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-bold bg-surface" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#faq1">
+                            Как быстро вы доставляете заказы?
+                        </button>
+                    </h2>
+                    <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body bg-surface text-muted">
+                            По Москве и области доставляем на следующий день при заказе до 14:00. Доставка в регионы
+                            занимает от 3 до 7 дней в зависимости от транспортной компании.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item border-0 border-bottom">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-bold bg-surface" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#faq2">
+                            Можно ли оплатить картой при получении?
+                        </button>
+                    </h2>
+                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body bg-surface text-muted">
+                            Да, наши курьеры принимают оплату банковскими картами и наличными. В пунктах самовывоза
+                            также доступны терминалы оплаты.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item border-0">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-bold bg-surface" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#faq3">
+                            Есть ли гарантия на товары?
+                        </button>
+                    </h2>
+                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body bg-surface text-muted">
+                            Абсолютно на все товары распространяется официальная гарантия производителя. Сроки гарантии
+                            указаны в карточке каждого товара.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
 {% endblock %}

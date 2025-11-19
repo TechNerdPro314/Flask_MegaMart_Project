@@ -9,6 +9,7 @@ from flask import (
     redirect,
     flash,
     send_from_directory,
+    abort,
 )
 from flask_login import current_user, login_required
 from app import db, cache
@@ -131,6 +132,19 @@ def catalog(slug=None):
         current_search_query=search_query,
         current_sort_by=sort_by,
     )
+
+
+@main_bp.route("/wishlist")
+@login_required
+def wishlist():
+    """Страница избранного"""
+    # Получаем товары из списка желаний текущего пользователя
+    # Используем selectinload для оптимизации загрузки картинок
+    products = current_user.wishlist.options(selectinload(Product.images)).all()
+
+    products = add_first_image_to_products(products)
+
+    return render_template("wishlist.html", title="Избранное", products=products)
 
 
 @main_bp.route("/product/<slug>")

@@ -1,22 +1,40 @@
 {% extends "base.html" %}
 
-{% block title %}404 Не найдено{% endblock %}
+{% block title %}Страница не найдена (404){% endblock %}
 
 {% block content %}
-<div class="container text-center my-5 py-5">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <h1 class="display-1 text-danger">404</h1>
-            <h2 class="mb-4">Упс! Страница не найдена.</h2>
-            <p class="lead">
-                К сожалению, по вашему запросу ничего не найдено. Возможно, вы ошиблись в адресе или страница была удалена.
+<div class="container">
+    <div class="row justify-content-center align-items-center" style="min-height: 60vh;">
+        <div class="col-lg-6 text-center animate__animated animate__fadeInUp">
+
+            <!-- Large Visual -->
+            <div class="mb-4 position-relative d-inline-block">
+                <h1 class="display-1 fw-bold text-gradient" style="font-size: 8rem;">404</h1>
+                <div class="position-absolute top-50 start-50 translate-middle bg-white px-2 rounded-3 shadow-sm">
+                    <i class="fas fa-search-location fa-2x text-primary"></i>
+                </div>
+            </div>
+
+            <h2 class="fw-bold mb-3">Страница не найдена</h2>
+            <p class="text-muted lead mb-5">
+                Похоже, мы не можем найти то, что вы ищете. Возможно, страница была удалена или адрес введен неверно.
             </p>
-            <a href="{{ url_for('main.index') }}" class="btn btn-primary btn-lg mt-3">
-                <i class="fa-solid fa-home me-2"></i> Вернуться на главную
-            </a>
-            <a href="{{ url_for('main.catalog') }}" class="btn btn-outline-primary btn-lg mt-3 ms-3">
-                <i class="fa-solid fa-list me-2"></i> Перейти в каталог
-            </a>
+
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="{{ url_for('main.index') }}" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">
+                    <i class="fas fa-home me-2"></i>На главную
+                </a>
+                <a href="{{ url_for('main.catalog') }}" class="btn btn-outline-secondary btn-lg px-5 rounded-pill">
+                    В каталог
+                </a>
+            </div>
+
+            <div class="mt-5">
+                <p class="small text-muted">
+                    Если вы считаете, что это ошибка, <a href="{{ url_for('main.contact') }}"
+                        class="text-decoration-none fw-bold">сообщите нам</a>.
+                </p>
+            </div>
         </div>
     </div>
 </div>

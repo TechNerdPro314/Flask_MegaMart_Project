@@ -3,61 +3,209 @@
 {% block title %}Отследить заказ{% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-6">
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h4 class="mb-0">Отслеживание заказа</h4>
-                </div>
-                <div class="card-body p-4">
-                    <p class="card-text">Чтобы проверить статус вашего заказа, пожалуйста, введите его номер и email,
-                        который вы использовали при оформлении.</p>
+<div class="container py-5">
+
+    <!-- 1. Header & Search Form -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-8 text-center">
+            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2 mb-3">
+                Статус доставки
+            </span>
+            <h1 class="fw-bold mb-4">Где мой <span class="text-gradient">заказ?</span></h1>
+            <p class="text-muted mb-4">
+                Введите номер заказа и email, указанный при оформлении, чтобы узнать текущий статус доставки.
+            </p>
+
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                <div class="card-body p-4 p-lg-5 bg-surface">
                     <form method="POST" action="{{ url_for('main.track_order') }}">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                        <div class="mb-3">
-                            <label for="order_id" class="form-label">Номер заказа</label>
-                            <input type="text" class="form-control" id="order_id" name="order_id"
-                                placeholder="например, 123" required>
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="row g-3">
+                            <div class="col-md-5">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control bg-light border-0" id="order_id"
+                                        name="order_id" placeholder="123" required>
+                                    <label for="order_id">Номер заказа</label>
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="form-floating">
+                                    <input type="email" class="form-control bg-light border-0" id="email" name="email"
+                                        placeholder="name@example.com" required>
+                                    <label for="email">Email</label>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100 h-100 fw-bold rounded-3">
+                                    <i class="fas fa-search d-md-none me-2"></i>
+                                    <span class="d-none d-md-inline"><i class="fas fa-arrow-right"></i></span>
+                                    <span class="d-md-none">Найти</span>
+                                </button>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email, указанный при заказе</label>
-                            <input type="email" class="form-control" id="email" name="email"
-                                placeholder="you@example.com" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">Найти заказ</button>
                     </form>
                 </div>
             </div>
-
-            {% if order %}
-            <div class="card shadow-sm mt-4">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0">Результат для заказа №{{ order.id }}</h5>
-                </div>
-                <div class="card-body">
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <strong>Статус:</strong>
-                            <span class="badge 
-                                {% if order.status == 'Paid' %}bg-success
-                                {% elif order.status == 'Failed' %}bg-danger
-                                {% else %}bg-info
-                                {% endif %} fs-6">
-                                {{ order.status }}
-                            </span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between"><strong>Дата заказа:</strong>
-                            <span>{{ order.created_at.strftime('%d.%m.%Y') }}</span></li>
-                        <li class="list-group-item d-flex justify-content-between"><strong>Сумма:</strong> <span>{{
-                                "%.2f"|format(order.final_amount) }} ₽</span></li>
-                        <li class="list-group-item"><strong>Адрес доставки:</strong><br>{{ order.shipping_address }}
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            {% endif %}
         </div>
     </div>
+
+    <!-- 2. Search Result (If Order Found) -->
+    {% if order %}
+    <div class="row justify-content-center animate__animated animate__fadeInUp">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <!-- Status Header -->
+                <div
+                    class="card-header bg-white border-bottom py-4 px-4 px-lg-5 d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3">
+                    <div>
+                        <h4 class="fw-bold mb-1">Заказ #{{ order.id }}</h4>
+                        <p class="text-muted small mb-0">от {{ order.created_at.strftime('%d.%m.%Y') }}</p>
+                    </div>
+
+                    {% if order.status == 'Paid' %}
+                    <span
+                        class="badge bg-success bg-opacity-10 text-success rounded-pill border border-success border-opacity-25 px-3 py-2">
+                        <i class="fas fa-check-circle me-1"></i> Оплачен
+                    </span>
+                    {% elif order.status == 'Pending' %}
+                    <span
+                        class="badge bg-warning bg-opacity-10 text-warning rounded-pill border border-warning border-opacity-25 px-3 py-2">
+                        <i class="fas fa-clock me-1"></i> Ожидает оплаты
+                    </span>
+                    {% elif order.status == 'Failed' %}
+                    <span
+                        class="badge bg-danger bg-opacity-10 text-danger rounded-pill border border-danger border-opacity-25 px-3 py-2">
+                        <i class="fas fa-times-circle me-1"></i> Ошибка
+                    </span>
+                    {% else %}
+                    <span
+                        class="badge bg-info bg-opacity-10 text-info rounded-pill border border-info border-opacity-25 px-3 py-2">
+                        {{ order.status }}
+                    </span>
+                    {% endif %}
+                </div>
+
+                <div class="card-body p-4 p-lg-5">
+                    <!-- Visual Tracker (Same as Order Page) -->
+                    {% if order.status != 'Cancelled' and order.status != 'Failed' %}
+                    <div class="position-relative mx-2 mb-5 mt-3">
+                        <div class="progress" style="height: 3px;">
+                            <div class="progress-bar bg-primary 
+                                {% if order.status == 'Paid' %}w-50
+                                {% elif order.status != 'Pending' %}w-100
+                                {% endif %}" role="progressbar"
+                                aria-valuenow="{% if order.status == 'Pending' %}0{% elif order.status == 'Paid' %}50{% else %}100{% endif %}"
+                                aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+
+                        <!-- Step 1 -->
+                        <div class="position-absolute top-0 start-0 translate-middle btn btn-sm btn-primary rounded-circle shadow-sm"
+                            style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-clipboard-check small"></i>
+                        </div>
+                        <div class="position-absolute top-100 start-0 translate-middle text-center mt-2"
+                            style="width: 100px;">
+                            <small class="fw-bold d-block">Оформлен</small>
+                        </div>
+
+                        <!-- Step 2 -->
+                        <div class="position-absolute top-0 start-50 translate-middle btn btn-sm {{ 'btn-primary' if order.status == 'Paid' or order.status == 'Shipped' else 'btn-white border' }} rounded-circle shadow-sm"
+                            style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                            <i
+                                class="fas fa-box-open small {{ 'text-white' if order.status == 'Paid' or order.status == 'Shipped' else 'text-muted' }}"></i>
+                        </div>
+                        <div class="position-absolute top-100 start-50 translate-middle text-center mt-2"
+                            style="width: 100px;">
+                            <small
+                                class="fw-bold d-block {{ 'text-primary' if order.status == 'Paid' else 'text-muted' }}">Сборка</small>
+                        </div>
+
+                        <!-- Step 3 -->
+                        <div class="position-absolute top-0 start-100 translate-middle btn btn-sm btn-white border rounded-circle shadow-sm"
+                            style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-truck small text-muted"></i>
+                        </div>
+                        <div class="position-absolute top-100 start-100 translate-middle text-center mt-2"
+                            style="width: 100px;">
+                            <small class="text-muted fw-bold d-block">В пути</small>
+                        </div>
+                    </div>
+                    <hr class="my-5 border-secondary border-opacity-10">
+                    {% endif %}
+
+                    <!-- Order Details Grid -->
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted text-uppercase small fw-bold mb-3">Доставка</h6>
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="bg-light rounded-circle p-2 me-3 text-primary">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div>
+                                    <strong class="d-block">{{ order.customer.name }}</strong>
+                                    <span class="text-muted">{{ order.shipping_address }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted text-uppercase small fw-bold mb-3">Состав заказа</h6>
+                            <ul class="list-group list-group-flush">
+                                {% for item in order.items %}
+                                <li
+                                    class="list-group-item px-0 border-0 d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-light text-dark me-2">{{ item.quantity }}x</span>
+                                        <span class="text-truncate" style="max-width: 180px;">{{ item.product.name
+                                            }}</span>
+                                    </div>
+                                    <span class="fw-bold small">{{ "{:,.0f}".format(item.price *
+                                        item.quantity).replace(',', ' ') }} ₽</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            <div class="d-flex justify-content-between border-top pt-3 mt-2">
+                                <span class="fw-bold">Итого:</span>
+                                <span class="fw-bold text-primary fs-5">{{
+                                    "{:,.0f}".format(order.final_amount).replace(',', ' ') }} ₽</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Action (if needed) -->
+                    {% if order.status == 'Pending' %}
+                    <div class="mt-4 pt-4 border-top text-center">
+                        <p class="text-muted mb-3">Заказ еще не оплачен. Оплатите его сейчас, чтобы мы начали сборку.
+                        </p>
+                        <a href="{{ url_for('cart_app.pay_order', order_id=order.id) }}"
+                            class="btn btn-primary btn-lg px-5 fw-bold shadow-sm">
+                            Перейти к оплате
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% elif request.method == 'POST' %}
+    <!-- Not Found State -->
+    <div class="row justify-content-center animate__animated animate__fadeIn">
+        <div class="col-lg-6 text-center">
+            <div class="bg-surface rounded-4 p-5 shadow-sm border">
+                <div class="mb-3 text-warning opacity-75">
+                    <i class="fas fa-search fa-3x"></i>
+                </div>
+                <h4 class="fw-bold">Заказ не найден</h4>
+                <p class="text-muted mb-4">
+                    Мы не нашли заказ с таким номером и email. Пожалуйста, проверьте данные и попробуйте снова.
+                </p>
+                <a href="{{ url_for('main.contact') }}" class="btn btn-outline-secondary btn-sm">
+                    Связаться с поддержкой
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
 </div>
 {% endblock %}
