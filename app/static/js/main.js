@@ -12,18 +12,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
     let currentTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
-    applyTheme(currentTheme);
+    applyTheme(currentTheme, false); // Apply without animation on load
 
     if (themeToggleBtn) {
         themeToggleBtn.addEventListener('click', () => {
             currentTheme = currentTheme === 'light' ? 'dark' : 'light';
-            applyTheme(currentTheme);
+            applyTheme(currentTheme, true); // Apply with animation on click
             localStorage.setItem('theme', currentTheme);
+
+            // Add ripple effect
+            createRipple(themeToggleBtn);
         });
     }
 
-    function applyTheme(theme) {
+    function applyTheme(theme, animate = true) {
+        // Add transition class for smooth theme change
+        if (animate) {
+            htmlElement.style.transition = 'background-color 0.3s ease, color 0.3s ease';
+        }
+
         htmlElement.setAttribute('data-bs-theme', theme);
+
         if (icon) {
             if (theme === 'dark') {
                 icon.classList.remove('fa-moon');
@@ -33,7 +42,63 @@ document.addEventListener('DOMContentLoaded', () => {
                 icon.classList.add('fa-moon');
             }
         }
+
+        // Remove transition after animation completes
+        if (animate) {
+            setTimeout(() => {
+                htmlElement.style.transition = '';
+            }, 300);
+        }
+
+        // Optional: Dispatch custom event for other scripts to react
+        window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme } }));
     }
+
+    // Create ripple effect on theme toggle
+    function createRipple(button) {
+        const ripple = document.createElement('span');
+        const diameter = Math.max(button.clientWidth, button.clientHeight);
+        const radius = diameter / 2;
+
+        ripple.style.width = ripple.style.height = `${diameter}px`;
+        ripple.style.left = '50%';
+        ripple.style.top = '50%';
+        ripple.style.transform = 'translate(-50%, -50%) scale(0)';
+        ripple.style.position = 'absolute';
+        ripple.style.borderRadius = '50%';
+        ripple.style.backgroundColor = 'rgba(255, 255, 255, 0.6)';
+        ripple.style.pointerEvents = 'none';
+        ripple.style.animation = 'ripple-animation 0.6s ease-out';
+
+        button.style.position = 'relative';
+        button.style.overflow = 'hidden';
+        button.appendChild(ripple);
+
+        setTimeout(() => ripple.remove(), 600);
+    }
+
+    // Add ripple animation CSS dynamically
+    if (!document.getElementById('ripple-styles')) {
+        const style = document.createElement('style');
+        style.id = 'ripple-styles';
+        style.textContent = `
+            @keyframes ripple-animation {
+                to {
+                    transform: translate(-50%, -50%) scale(2);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // Listen for system theme changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        if (!localStorage.getItem('theme')) {
+            currentTheme = e.matches ? 'dark' : 'light';
+            applyTheme(currentTheme, true);
+        }
+    });
 
     // --- 2. PWA Service Worker Registration ---
     // The URL is passed via data-attribute on body to avoid template tags in JS file

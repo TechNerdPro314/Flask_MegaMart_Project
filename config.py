@@ -7,7 +7,10 @@ load_dotenv(os.path.join(basedir, ".env"))
 
 class Config:
     # Общие настройки
-    SECRET_KEY = os.environ.get("SECRET_KEY") or "a-very-insecure-default-key"
+    SECRET_KEY = os.environ.get("SECRET_KEY")
+    if not SECRET_KEY:
+        raise RuntimeError("SECRET_KEY must be set in environment variables for production!")
+    
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     WTF_CSRF_ENABLED = True
     GOOGLE_ANALYTICS_ID = os.environ.get("GOOGLE_ANALYTICS_ID")
@@ -40,6 +43,9 @@ class Config:
         os.environ.get("CELERY_RESULT_BACKEND") or "redis://redis:6379/0"
     )
 
+    # Sentry DSN для мониторинга ошибок
+    SENTRY_DSN = os.environ.get("SENTRY_DSN")
+
 
 class DevelopmentConfig(Config):
     DEBUG = True
@@ -53,13 +59,29 @@ class ProductionConfig(Config):
     TESTING = False
     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URI")
 
+    # Connection Pooling для production
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_size": int(os.environ.get("DB_POOL_SIZE") or 10),
+        "pool_recycle": 3600,
+        "pool_pre_ping": True,
+        "max_overflow": int(os.environ.get("DB_MAX_OVERFLOW") or 20),
+    }
+
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
+
+    # Security headers
+    SECURITY_HEADERS = {
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+    }
 
 
 config = {
     "development": DevelopmentConfig,
     "production": ProductionConfig,
-    "default": DevelopmentConfig,
+    "default": ProductionConfig,
 }

@@ -11,6 +11,7 @@ from app.email import send_welcome_email
 
 
 @auth_bp.route("/register", methods=["GET", "POST"])
+@limiter.limit("5 per hour")
 def register():
     if current_user.is_authenticated:
         return redirect(url_for("main.index"))
@@ -35,7 +36,7 @@ def register():
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
-@limiter.limit("10 per minute")
+@limiter.limit("10 per minute; 50 per hour")
 def login():
     if current_user.is_authenticated:
         return redirect(url_for("main.index"))

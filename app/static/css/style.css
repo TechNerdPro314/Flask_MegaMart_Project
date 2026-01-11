@@ -53,18 +53,33 @@
 
 /* Dark Theme Overrides */
 [data-bs-theme="dark"] {
-  --mm-bg-body: #0f172a;
-  /* Slate 900 */
-  --mm-bg-surface: #1e293b;
-  /* Slate 800 */
-  --mm-text-main: #f1f5f9;
-  /* Slate 100 */
+  /* Backgrounds - deeper, richer colors */
+  --mm-bg-body: #0a0f1e;
+  /* Deep navy - darker than before */
+  --mm-bg-surface: #151d2f;
+  /* Elevated surface - rich dark blue */
+
+  /* Text - better contrast */
+  --mm-text-main: #e2e8f0;
+  /* Soft white for primary text */
   --mm-text-muted: #94a3b8;
-  /* Slate 400 */
-  --mm-border: #334155;
-  /* Slate 700 */
-  --mm-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-  --mm-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  /* Slate 400 for muted text */
+
+  /* Borders - subtle but visible */
+  --mm-border: #273549;
+  /* Darker border for depth */
+
+  /* Shadows - more prominent in dark mode */
+  --mm-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --mm-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4);
+  --mm-shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.5);
+
+  /* Accent colors - slightly brighter for dark theme */
+  --mm-primary: #1d7bc7;
+  /* Brighter blue for better visibility */
+  --mm-primary-hover: #2490e6;
+  --mm-accent: #fbbf24;
+  /* Brighter amber for visibility */
 }
 
 /* -------------------------------------------------------------------------- */
@@ -117,8 +132,10 @@ main {
 }
 
 [data-bs-theme="dark"] .navbar-glass {
-  background-color: rgba(30, 41, 59, 0.9);
+  background-color: rgba(21, 29, 47, 0.85);
   border-bottom-color: var(--mm-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 .navbar-brand {
@@ -242,7 +259,8 @@ main {
 }
 
 [data-bs-theme="dark"] .footer {
-  background-color: #1e293b;
+  background-color: var(--mm-bg-surface);
+  border-top-color: var(--mm-border);
 }
 
 .footer-heading {
@@ -278,6 +296,22 @@ main {
 
 .object-fit-cover {
   object-fit: cover;
+}
+
+/* Background utility classes */
+.bg-surface {
+  background-color: var(--mm-bg-surface) !important;
+}
+
+.bg-body {
+  background-color: var(--mm-bg-body) !important;
+}
+
+/* Sticky utilities */
+.sticky-bottom {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
 }
 
 /* Fix for flash messages to ensure they don't overlap navbar */
@@ -520,6 +554,32 @@ main {
   /* Убираем лишние тени, оставляем аккуратную */
   box-shadow: var(--mm-shadow-sm);
   transition: box-shadow 0.3s ease;
+
+  /* Sticky behavior */
+  position: -webkit-sticky;
+  position: sticky;
+  top: 6rem;
+  max-height: calc(100vh - 7rem);
+  overflow-y: auto;
+  z-index: 90;
+}
+
+/* Scrollbar for the sidebar itself */
+.filter-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.filter-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.filter-sidebar::-webkit-scrollbar-thumb {
+  background-color: var(--mm-border);
+  border-radius: 4px;
+}
+
+.filter-sidebar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--mm-secondary);
 }
 
 /* Заголовки секций фильтра */
@@ -911,4 +971,536 @@ main {
 .status-cancelled {
   background-color: #f8d7da;
   color: #842029;
+}
+
+/* --- Стили для расширенных характеристик и мета-инфо --- */
+
+/* Характеристики товара (таблица с точками) */
+.specs-group-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  margin-top: 1.5rem;
+  color: var(--mm-primary);
+}
+
+.spec-item {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 0.75rem;
+}
+
+.spec-key {
+  color: var(--mm-text-muted);
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
+  padding-right: 0.5rem;
+  background: var(--mm-bg-surface);
+  /* Чтобы перекрыть точки */
+}
+
+/* Линия из точек */
+.spec-dots {
+  flex-grow: 1;
+  border-bottom: 1px dotted var(--mm-text-muted);
+  margin: 0 0.5rem;
+  position: relative;
+  top: -4px;
+  /* Подгонка по высоте */
+  opacity: 0.5;
+}
+
+.spec-value {
+  color: var(--mm-text-main);
+  font-weight: 600;
+  padding-left: 0.5rem;
+  background: var(--mm-bg-surface);
+  /* Чтобы перекрыть точки */
+  text-align: right;
+  max-width: 50%;
+}
+
+/* Блок краткой инфо (страна, гарантия) */
+.product-meta-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--mm-bg-body);
+  border-radius: var(--mm-radius-sm);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--mm-text-main);
+  border: 1px solid var(--mm-border);
+}
+
+/* --- Стили фильтров (Santehnika-online style) --- */
+
+.filter-accordion-item {
+  border-bottom: 1px solid var(--mm-border);
+  padding: 0.5rem 0;
+}
+
+.filter-accordion-button {
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  padding: 1rem 0;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--mm-text-main);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filter-accordion-button:hover {
+  color: var(--mm-primary);
+}
+
+.filter-accordion-button::after {
+  content: '\f078';
+  /* FontAwesome chevron down */
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  font-size: 0.75rem;
+  transition: transform 0.3s;
+}
+
+.filter-accordion-button.collapsed::after {
+  transform: rotate(-90deg);
+}
+
+.filter-content {
+  padding-bottom: 1rem;
+}
+
+/* Красивые чекбоксы */
+.custom-control-label {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  cursor: pointer;
+  display: block;
+  position: relative;
+  padding-left: 1.75rem;
+  color: var(--mm-text-main);
+  transition: color 0.2s;
+}
+
+.custom-control-input {
+  position: absolute;
+  opacity: 0;
+  z-index: -1;
+}
+
+.custom-control-indicator {
+  position: absolute;
+  top: 0.15rem;
+  left: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 1px solid var(--mm-border);
+  border-radius: 4px;
+  background-color: var(--mm-bg-surface);
+  transition: all 0.2s;
+}
+
+.custom-control-input:checked~.custom-control-indicator {
+  background-color: var(--mm-primary);
+  border-color: var(--mm-primary);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23fff' d='M6.564.75l-3.59 3.612-1.538-1.55L0 4.26 2.974 7.25 8 2.193z'/%3e%3c/svg%3e");
+  background-size: 60%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.custom-control-input:hover~.custom-control-indicator {
+  border-color: var(--mm-primary);
+}
+
+.custom-control-input:checked~.custom-control-label {
+  color: var(--mm-primary);
+  font-weight: 600;
+}
+
+/* -------------------------------------------------------------------------- */
+/* EXPANDING SEARCH BAR */
+/* -------------------------------------------------------------------------- */
+.search-expandable {
+  position: relative;
+  width: 40px;
+  /* Ширина в закрытом состоянии (только иконка) */
+  height: 40px;
+  background: #fff;
+  border-radius: 50px;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  overflow: hidden;
+  border: 1px solid transparent;
+}
+
+/* Состояние при наведении или фокусе внутри формы */
+.search-expandable:hover,
+.search-expandable:focus-within {
+  width: 300px;
+  /* Ширина в открытом состоянии */
+  border-color: var(--mm-border);
+  box-shadow: var(--mm-shadow-sm);
+}
+
+.search-input-expand {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 0 50px 0 20px;
+  /* Отступ справа для кнопки */
+  font-size: 0.95rem;
+  color: var(--mm-text-main);
+  opacity: 0;
+  /* Скрыт по умолчанию */
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+
+/* Показываем инпут, когда форма раскрыта */
+.search-expandable:focus-within .search-input-expand {
+  opacity: 1;
+  cursor: text;
+}
+
+.search-btn-icon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mm-text-muted);
+  font-size: 1.1rem;
+  transition: color 0.3s;
+  pointer-events: none;
+  /* Чтобы клик проходил сквозь иконку на инпут */
+}
+
+/* Когда форма активна, иконка становится кнопкой поиска */
+.search-expandable:focus-within .search-btn-icon {
+  color: var(--mm-primary);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* Адаптивность: на мобильных поиск растягивается на всю ширину при клике */
+@media (max-width: 576px) {
+  .search-expandable:focus-within {
+    width: 100%;
+    position: absolute;
+    right: 15px;
+    left: 15px;
+    width: auto;
+    z-index: 1050;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* RESPONSIVE: FILTERS */
+/* -------------------------------------------------------------------------- */
+@media (max-width: 991.98px) {
+  .filter-sidebar {
+    position: static !important;
+    margin-bottom: 2rem;
+  }
+
+  .filter-accordion-button {
+    padding: 0.75rem 0;
+  }
+
+  .custom-scrollbar {
+    max-height: 180px;
+  }
+}
+
+@media (max-width: 768px) {
+  .filter-sidebar {
+    padding: 1rem;
+  }
+
+  .price-input {
+    font-size: 0.9rem;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* DARK THEME ENHANCEMENTS */
+/* -------------------------------------------------------------------------- */
+
+/* Product Cards in Dark Mode */
+[data-bs-theme="dark"] .product-card {
+  background-color: var(--mm-bg-surface);
+  border-color: var(--mm-border);
+}
+
+[data-bs-theme="dark"] .product-card:hover {
+  border-color: var(--mm-primary);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+}
+
+[data-bs-theme="dark"] .product-thumb-wrapper {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-bottom-color: var(--mm-border);
+}
+
+/* Cards and Surfaces */
+[data-bs-theme="dark"] .card {
+  background-color: var(--mm-bg-surface);
+  border-color: var(--mm-border);
+}
+
+[data-bs-theme="dark"] .card-header,
+[data-bs-theme="dark"] .card-footer {
+  background-color: rgba(255, 255, 255, 0.02);
+  border-color: var(--mm-border);
+}
+
+/* Forms */
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
+  background-color: var(--mm-bg-body);
+  border-color: var(--mm-border);
+  color: var(--mm-text-main);
+}
+
+[data-bs-theme="dark"] .form-control:focus,
+[data-bs-theme="dark"] .form-select:focus {
+  background-color: var(--mm-bg-surface);
+  border-color: var(--mm-primary);
+  color: var(--mm-text-main);
+  box-shadow: 0 0 0 0.2rem rgba(29, 123, 199, 0.25);
+}
+
+[data-bs-theme="dark"] .form-control::placeholder {
+  color: var(--mm-text-muted);
+  opacity: 0.6;
+}
+
+/* Buttons */
+[data-bs-theme="dark"] .btn-light {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--mm-border);
+  color: var(--mm-text-main);
+}
+
+[data-bs-theme="dark"] .btn-light:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: var(--mm-border);
+  color: var(--mm-text-main);
+}
+
+/* Alerts */
+[data-bs-theme="dark"] .alert {
+  border-color: var(--mm-border);
+}
+
+[data-bs-theme="dark"] .alert-success {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+[data-bs-theme="dark"] .alert-danger {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+[data-bs-theme="dark"] .alert-warning {
+  background-color: rgba(251, 191, 36, 0.15);
+  color: #fde68a;
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+[data-bs-theme="dark"] .alert-info {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+/* Modal */
+[data-bs-theme="dark"] .modal-content {
+  background-color: var(--mm-bg-surface);
+  border-color: var(--mm-border);
+}
+
+[data-bs-theme="dark"] .modal-header,
+[data-bs-theme="dark"] .modal-footer {
+  border-color: var(--mm-border);
+}
+
+/* Dropdown */
+[data-bs-theme="dark"] .dropdown-menu {
+  background-color: var(--mm-bg-surface);
+  border-color: var(--mm-border);
+  box-shadow: var(--mm-shadow-lg);
+}
+
+[data-bs-theme="dark"] .dropdown-item {
+  color: var(--mm-text-main);
+}
+
+[data-bs-theme="dark"] .dropdown-item:hover,
+[data-bs-theme="dark"] .dropdown-item:focus {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--mm-text-main);
+}
+
+[data-bs-theme="dark"] .dropdown-divider {
+  border-color: var(--mm-border);
+}
+
+/* Tables */
+[data-bs-theme="dark"] .table {
+  color: var(--mm-text-main);
+  border-color: var(--mm-border);
+}
+
+[data-bs-theme="dark"] .table-striped>tbody>tr:nth-of-type(odd)>* {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+[data-bs-theme="dark"] .table-hover>tbody>tr:hover>* {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Breadcrumb */
+[data-bs-theme="dark"] .breadcrumb {
+  background-color: transparent;
+}
+
+[data-bs-theme="dark"] .breadcrumb-item+.breadcrumb-item::before {
+  color: var(--mm-text-muted);
+}
+
+[data-bs-theme="dark"] .breadcrumb-item a {
+  color: var(--mm-primary);
+}
+
+/* Filter Sidebar Dark Mode */
+[data-bs-theme="dark"] .filter-sidebar {
+  background-color: var(--mm-bg-surface);
+  border-color: var(--mm-border);
+}
+
+/* Feature Boxes */
+[data-bs-theme="dark"] .feature-box {
+  background-color: var(--mm-bg-surface);
+  border-color: var(--mm-border);
+}
+
+[data-bs-theme="dark"] .feature-box:hover {
+  border-color: var(--mm-primary);
+  box-shadow: var(--mm-shadow-md);
+}
+
+[data-bs-theme="dark"] .feature-icon {
+  background-color: rgba(29, 123, 199, 0.15);
+}
+
+/* Hero Section Dark Mode */
+[data-bs-theme="dark"] .hero-wrapper {
+  background: linear-gradient(135deg, var(--mm-bg-surface) 0%, #0d1b2e 100%);
+  box-shadow: var(--mm-shadow-md);
+}
+
+/* Cart Items */
+[data-bs-theme="dark"] .cart-item-card {
+  background-color: var(--mm-bg-surface);
+  border-color: var(--mm-border);
+}
+
+[data-bs-theme="dark"] .cart-img {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-color: var(--mm-border);
+}
+
+[data-bs-theme="dark"] .cart-summary {
+  background-color: var(--mm-bg-surface);
+  border-color: var(--mm-border);
+}
+
+/* Profile Sidebar */
+[data-bs-theme="dark"] .profile-sidebar {
+  background-color: var(--mm-bg-surface);
+  border-color: var(--mm-border);
+}
+
+[data-bs-theme="dark"] .profile-user-info {
+  background: linear-gradient(to bottom, var(--mm-bg-body), var(--mm-bg-surface));
+  border-bottom-color: var(--mm-border);
+}
+
+/* Search Bar */
+[data-bs-theme="dark"] .search-expandable {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: var(--mm-border);
+}
+
+[data-bs-theme="dark"] .search-expandable:hover,
+[data-bs-theme="dark"] .search-expandable:focus-within {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--mm-border);
+}
+
+[data-bs-theme="dark"] .search-input-expand {
+  color: var(--mm-text-main);
+}
+
+[data-bs-theme="dark"] .search-input-expand::placeholder {
+  color: var(--mm-text-muted);
+}
+
+/* Theme Toggle Button Enhancement */
+.theme-toggle-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-toggle-btn:hover {
+  transform: scale(1.1) rotate(10deg);
+}
+
+.theme-toggle-btn i {
+  transition: transform 0.3s ease;
+}
+
+/* Auth Pages */
+[data-bs-theme="dark"] .auth-wrapper {
+  background-color: var(--mm-bg-surface);
+}
+
+[data-bs-theme="dark"] .auth-cover {
+  background: linear-gradient(135deg, #1d7bc7 0%, #0f4c81 100%);
+}
+
+/* Review Cards */
+[data-bs-theme="dark"] .review-card {
+  background-color: var(--mm-bg-surface);
+  border-color: var(--mm-border);
+}
+
+/* Badge Colors */
+[data-bs-theme="dark"] .badge {
+  color: var(--mm-text-main);
+}
+
+/* Close Button */
+[data-bs-theme="dark"] .btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%);
 }

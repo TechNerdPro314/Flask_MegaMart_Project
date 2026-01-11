@@ -133,6 +133,12 @@ class Product(db.Model):
     brand_id = db.Column(
         db.Integer, db.ForeignKey("brand.id"), nullable=False, index=True
     )
+    
+    # НОВЫЕ ПОЛЯ ПО ТЗ
+    country = db.Column(db.String(100))      # Страна производства
+    warranty = db.Column(db.String(50))      # Гарантия
+    specifications = db.Column(db.JSON)      # JSON для хранения характеристик
+    
     reviews = db.relationship(
         "Review", backref="product", lazy="dynamic", cascade="all, delete-orphan"
     )
@@ -176,9 +182,13 @@ class Review(db.Model):
     rating = db.Column(db.Integer, nullable=False)
     comment = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    product_id = db.Column(db.Integer, db.ForeignKey("product.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    product_id = db.Column(db.Integer, db.ForeignKey("product.id"), nullable=False, index=True)
     author = db.relationship("User", backref="reviews")
+
+    __table_args__ = (
+        db.Index("idx_review_user_product", "user_id", "product_id"),
+    )
 
     def __repr__(self):
         return f"<Review {self.id} for Product {self.product_id}>"

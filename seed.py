@@ -1,32 +1,22 @@
 from app import create_app, db
-from app.models import User, Category, Brand, Product, ProductImage, Review, Order, OrderItem, Cart, PromoCode
+from app.models import User, Category, Brand, Product, ProductImage
 import random
-from datetime import datetime, timedelta
-from datetime import timezone
 
 app = create_app()
 app.app_context().push()
 
-# Создание таблиц
-db.create_all()
-
-# Очистка старых данных
+# --- 1. Очистка старых данных ---
 print("Очистка старых данных...")
-db.session.query(Cart).delete()
-db.session.query(OrderItem).delete()
-db.session.query(Order).delete()
-db.session.query(Review).delete()
 db.session.query(ProductImage).delete()
-db.session.query(PromoCode).delete()
 db.session.query(Product).delete()
 db.session.query(Category).delete()
 db.session.query(Brand).delete()
 db.session.query(User).delete()
 db.session.commit()
 
-print("Создание тестовых данных...")
+print("Создание новой структуры данных по ТЗ...")
 
-# Администратор
+# --- 2. Администратор ---
 admin = User(
     email="admin@megamart.ru",
     name="Администратор",
@@ -35,47 +25,39 @@ admin = User(
 admin.set_password("admin123")
 db.session.add(admin)
 
-# Обычные пользователи
-users = []
-user_emails = [
-    "user1@example.com", "user2@example.com", "user3@example.com",
-    "ivanov@example.com", "petrov@example.com", "smirnov@example.com"
-]
-user_names = [
-    "Иван Иванов", "Петр Петров", "Сидор Сидоров",
-    "Александр Иванов", "Михаил Петров", "Дмитрий Смирнов"
-]
-
-for i in range(len(user_emails)):
-    user = User(
-        email=user_emails[i],
-        name=user_names[i],
-        phone=f"+790012345{i:02d}",
-        address=f"г. Москва, ул. Примерная, д. {i+1}"
-    )
-    user.set_password("password123")
-    db.session.add(user)
-    users.append(user)
-
-db.session.flush()
-
-# Категории (с подкатегориями)
-categories_data = [
-    "Смесители", "Ванны", "Унитазы", "Душевые кабины",
-    "Аксессуары", "Раковины", "Трубы и фитинги"
-]
+# --- 3. Категории из ТЗ (16 шт) ---
+categories_config = {
+    "Унитазы": "fa-toilet",
+    "Раковины": "fa-sink",
+    "Смесители": "fa-faucet",
+    "Душевые программы": "fa-shower",
+    "Душевые кабины и ограждения": "fa-dungeon",
+    "Ванны": "fa-bath",
+    "Инсталляции": "fa-wrench",
+    "Комплекты с унитазом": "fa-layer-group",
+    "Кухонные мойки": "fa-utensils",
+    "Фильтры и аксессуары": "fa-filter",
+    "Полотенцесушители": "fa-hot-tub-person",
+    "Слив и канализация": "fa-arrow-down",
+    "Водонагреватели": "fa-temperature-high",
+    "Теплые полы": "fa-border-all",
+    "Биде": "fa-tint",
+    "Писсуары": "fa-restroom"
+}
 
 categories = {}
-for name in categories_data:
+for name, icon in categories_config.items():
     cat = Category(name=name)
     db.session.add(cat)
     categories[name] = cat
 
-db.session.flush()
-
-# Бренды
-brands_data = ["Grohe", "Hansgrohe", "Roca", "Cersanit", "Jacob Delafon", "Vitra", "Kolo", "AlcaPlast"]
-
+# --- 4. Бренды ---
+# Расширенный список брендов для покрытия всех категорий
+brands_data = [
+    "Grohe", "Hansgrohe", "Roca", "Cersanit", "Jacob Delafon", "Vitra", 
+    "Geberit", "Laufen", "STWORKI", "Ravak", "Wasserkraft", "Aquaton", 
+    "Thermex", "Electrolux", "Viega", "AlcaPlast", "Omoikiri", "Franke"
+]
 brands = {}
 for name in brands_data:
     brand = Brand(name=name)
@@ -84,173 +66,295 @@ for name in brands_data:
 
 db.session.flush()
 
-# Товары
-product_names = {
-    "Смесители": ["Кухонный смеситель", "Смеситель для ванны", "Душевой смеситель", "Смеситель для биде"],
-    "Ванны": ["Акриловая ванна", "Стальная ванна", "Чугунная ванна", "Корнерная ванна"],
-    "Унитазы": ["Напольный унитаз", "Подвесной унитаз", "Унитаз-компакт", "Биде"],
-    "Душевые кабины": ["Душевая кабина 90x90", "Душевой уголок", "Душевой поддон", "Квадратная кабина"],
-    "Аксессуары": ["Мыльница", "Держатель для полотенец", "Вешалка для ванной", "Дозатор для мыла"],
-    "Раковины": ["Подвесная раковина", "Тумба с раковиной", "Подстольная раковина", "Раковина для биде"],
-    "Трубы и фитинги": ["Полипропиленовая труба", "Металлопластик", "Фитинги для воды", "Фитинги для канализации"]
+# --- 5. Генераторы Характеристик (SPEC GENERATORS) ---
+
+def get_toilet_specs(subtype):
+    is_hanging = "Подвесной" in subtype
+    return {
+        "Размеры": {
+            "Длина, см": str(random.randint(48, 60)),
+            "Ширина, см": str(random.randint(34, 37)),
+            "Высота, см": str(random.randint(35, 42) if is_hanging else random.randint(75, 85))
+        },
+        "Исполнение": {
+            "Монтаж": "Подвесной" if is_hanging else "Напольный",
+            "Выпуск": "Горизонтальный",
+            "Безободковый": "Да" if random.choice([True, False]) else "Нет"
+        },
+        "Внешний вид": {
+            "Цвет": "Белый",
+            "Поверхность": "Глянцевая",
+            "Стилистика": "Современный"
+        },
+        "Материал": {"Материал": "Санфарфор"},
+        "Особенности": {"Сиденье с микролифтом": "Да", "Антивсплеск": "Есть"}
+    }
+
+def get_sink_specs(subtype):
+    width = random.choice([50, 60, 70, 80, 100])
+    return {
+        "Размеры": {"Ширина, см": str(width), "Глубина, см": str(random.randint(35, 50))},
+        "Монтаж": {"Тип установки": subtype.replace("Раковина ", "").capitalize()},
+        "Материал": {"Материал": random.choice(["Санфарфор", "Фаянс", "Искусственный камень"])},
+        "Внешний вид": {"Форма": random.choice(["Прямоугольная", "Овальная", "Круглая"])}
+    }
+
+def get_mixer_specs(subtype):
+    color = random.choice(["Хром", "Черный матовый", "Белый", "Золото"])
+    return {
+        "Исполнение": {
+            "Назначение": subtype,
+            "Управление": random.choice(["Рычажное", "Двухвентильное", "Сенсорное"]),
+            "Материал": "Латунь"
+        },
+        "Внешний вид": {"Цвет": color, "Поверхность": "Матовая" if "матовый" in color else "Глянцевая"},
+        "Размеры": {"Высота излива, см": str(random.randint(10, 25))},
+        "Монтаж": {"Стандарт подводки": "1/2\"", "Отверстия": "1"}
+    }
+
+def get_bath_specs(material):
+    length = random.choice([150, 160, 170, 180])
+    return {
+        "Габариты": {"Длина, см": str(length), "Ширина, см": str(random.choice([70, 75, 80])), "Объем, л": str(random.randint(180, 260))},
+        "Материал": {"Материал": material, "Толщина": "4-6 мм" if material == "Акрил" else "8-10 мм"},
+        "Функции": {"Гидромассаж": "Есть" if random.random() > 0.7 else "Нет"}
+    }
+
+def get_shower_program_specs(subtype):
+    return {
+        "Характеристики": {
+            "Тип": subtype, # Душевая стойка / Панель
+            "Тропический душ": "Есть",
+            "Ручной душ": "3 режима",
+            "Смеситель": "Термостатический" if random.random() > 0.5 else "Механический"
+        },
+        "Материал": {"Материал штанги": "Нержавеющая сталь", "Покрытие": "Хром"},
+        "Монтаж": {"Установка": "Настенная"}
+    }
+
+def get_shower_cabin_specs():
+    size = random.choice(["90x90", "100x100", "120x80"])
+    return {
+        "Габариты": {"Размер, см": size, "Высота, см": "215"},
+        "Конструкция": {
+            "Форма": random.choice(["Четверть круга", "Квадратная", "Прямоугольная"]),
+            "Поддон": random.choice(["Низкий", "Средний", "Высокий"]),
+            "Двери": "Раздвижные"
+        },
+        "Стекло": {"Тип стекла": "Закаленное", "Исполнение": random.choice(["Прозрачное", "Матовое", "Тонированное"])},
+        "Функции": {"Тропический душ": "Есть"}
+    }
+
+def get_installation_specs():
+    return {
+        "Назначение": {"Для": "Подвесного унитаза"},
+        "Габариты": {"Ширина, см": "50", "Глубина, см": "12-20", "Высота, см": "112"},
+        "Комплектация": {
+            "Кнопка смыва": "В комплекте" if random.random() > 0.3 else "Приобретается отдельно",
+            "Крепеж": "Есть",
+            "Звукоизоляция": "Есть"
+        },
+        "Характеристики": {"Режим смыва": "Двойной (3/6 л)", "Механизм": "Механический"}
+    }
+
+def get_kitchen_sink_specs():
+    return {
+        "Габариты": {"Ширина шкафа, см": random.choice(["45", "50", "60"]), "Длина мойки, см": str(random.randint(40, 80))},
+        "Материал": {"Материал": random.choice(["Нержавеющая сталь", "Искусственный гранит", "Керамика"])},
+        "Конструкция": {
+            "Количество чаш": random.choice(["1 основная", "1.5 чаши", "2 чаши"]),
+            "Крыло": "Есть" if random.random() > 0.5 else "Нет",
+            "Форма": random.choice(["Прямоугольная", "Круглая", "Квадратная"])
+        },
+        "Цвет": {"Цвет": random.choice(["Сталь", "Черный", "Бежевый", "Серый"])}
+    }
+
+def get_towel_warmer_specs():
+    type_ = random.choice(["Водяной", "Электрический"])
+    return {
+        "Основные": {"Тип": type_, "Форма": random.choice(["Лесенка", "М-образный", "Фокстрот"])},
+        "Размеры": {
+            "Высота, см": str(random.choice([50, 60, 80, 100])),
+            "Ширина, см": str(random.choice([40, 50, 60]))
+        },
+        "Материал": {"Материал": "Нержавеющая сталь AISI 304"},
+        "Подключение": {"Тип подключения": "Нижнее" if type_ == "Водяной" else "Скрытое/Вилка"}
+    }
+
+def get_water_heater_specs():
+    volume = random.choice([30, 50, 80, 100])
+    return {
+        "Основные": {
+            "Тип": "Накопительный",
+            "Объем, л": str(volume),
+            "Установка": random.choice(["Вертикальная", "Горизонтальная"])
+        },
+        "Нагрев": {
+            "Мощность, кВт": "1.5" if volume < 50 else "2.0",
+            "Время нагрева 45°C": f"{volume + 20} мин"
+        },
+        "Бак": {"Покрытие бака": random.choice(["Биостеклофарфор", "Нержавеющая сталь", "Эмаль"])},
+        "Управление": {"Тип": random.choice(["Механическое", "Электронное"])}
+    }
+
+def get_floor_heating_specs():
+    area = random.choice([1.0, 1.5, 2.0, 3.0, 5.0])
+    return {
+        "Основные": {
+            "Тип системы": random.choice(["Нагревательный мат", "Кабель в стяжку"]),
+            "Площадь обогрева, м2": str(area),
+            "Мощность, Вт": str(int(area * 150))
+        },
+        "Монтаж": {"Покрытие": "Под плитку / керамогранит"}
+    }
+
+def get_bidet_specs():
+    install = random.choice(["Подвесное", "Напольное"])
+    return {
+        "Основные": {"Тип": "Биде", "Монтаж": install},
+        "Размеры": {"Длина, см": "54", "Ширина, см": "36", "Высота, см": "40"},
+        "Внешний вид": {"Цвет": "Белый", "Поверхность": "Глянцевая"},
+        "Отверстие под смеситель": {"Количество": "1", "Расположение": "По центру"}
+    }
+
+def get_urinal_specs():
+    return {
+        "Основные": {"Тип": "Писсуар", "Монтаж": "Подвесной"},
+        "Управление": {"Смыв": random.choice(["Сенсорный (ИК)", "Механическая кнопка", "Наружный кран"])},
+        "Подвод воды": {"Тип": random.choice(["Скрытый", "Наружный"])},
+        "Материал": {"Материал": "Санфарфор"}
+    }
+
+def get_drain_specs(subtype):
+    return {
+        "Назначение": {"Для": subtype},
+        "Материал": {"Материал": random.choice(["Пластик", "Латунь/Хром"])},
+        "Конструкция": {"Тип": "Бутылочный" if "раковин" in subtype else "Обвязка"},
+        "Размеры": {"Диаметр слива": "1 1/4\"" if "раковин" in subtype else "1 1/2\""}
+    }
+
+def get_filter_specs():
+    return {
+        "Основные": {
+            "Тип": random.choice(["Магистральный фильтр", "Фильтр под мойку", "Сменный картридж"]),
+            "Назначение": "Очистка воды"
+        },
+        "Очистка": {"Ступени очистки": random.choice(["1", "3", "5"])},
+        "Характеристики": {"Производительность": "3 л/мин", "Ресурс": "10000 л"}
+    }
+
+# --- 6. Генерация Товаров ---
+
+# Словарь: Категория -> Функция генерации + Данные для названия
+generators = {
+    "Унитазы": (get_toilet_specs, ["Подвесной унитаз", "Напольный унитаз", "Унитаз-компакт", "Безободковый унитаз"]),
+    "Раковины": (get_sink_specs, ["Раковина подвесная", "Раковина накладная", "Раковина врезная", "Раковина мебельная"]),
+    "Смесители": (get_mixer_specs, ["Смеситель для раковины", "Смеситель для ванны", "Смеситель для кухни", "Смеситель для душа"]),
+    "Душевые программы": (get_shower_program_specs, ["Душевая стойка", "Душевая панель", "Душевой гарнитур"]),
+    "Душевые кабины и ограждения": (get_shower_cabin_specs, ["Душевая кабина"]), # Без подтипов
+    "Ванны": (None, ["Ванна"]), # Спец логика
+    "Инсталляции": (get_installation_specs, ["Инсталляция для унитаза"]),
+    "Комплекты с унитазом": (None, ["Комплект 4в1"]), # Спец логика (Инсталляция + Унитаз)
+    "Кухонные мойки": (get_kitchen_sink_specs, ["Кухонная мойка"]),
+    "Фильтры и аксессуары": (get_filter_specs, ["Фильтр"]),
+    "Полотенцесушители": (get_towel_warmer_specs, ["Полотенцесушитель"]),
+    "Слив и канализация": (None, ["Сифон"]), # Спец логика
+    "Водонагреватели": (get_water_heater_specs, ["Водонагреватель"]),
+    "Теплые полы": (get_floor_heating_specs, ["Теплый пол"]),
+    "Биде": (get_bidet_specs, ["Биде"]),
+    "Писсуары": (get_urinal_specs, ["Писсуар"])
 }
 
-# Создание товаров
-products = []
-for category_name, products_list in product_names.items():
-    for i, product_name in enumerate(products_list):
-        price = random.randint(3000, 80000)
-        old_price = price + random.randint(1000, 15000)
+print("Генерация товаров по категориям...")
 
-        product = Product(
-            name=f"{product_name} {i+1}",
-            description=f"Описание {product_name.lower()} с отличными характеристиками и высоким качеством. Подходит для современных ванных комнат.",
-            price=price,
-            old_price=old_price,
-            sku=f"SKU-{category_name[:3].upper()}-{i+1:03d}",
-            in_stock=random.randint(0, 30),
-            category_id=categories[category_name].id,
-            brand_id=random.choice(list(brands.values())).id
+total_products = 0
+
+for cat_name, cat_obj in categories.items():
+    # Определяем сколько товаров создавать (популярные категории больше)
+    count = 15 if cat_name in ["Унитазы", "Смесители", "Раковины", "Ванны"] else 7
+    
+    # Получаем генератор и список типов
+    if cat_name in generators:
+        gen_func, types = generators[cat_name]
+    else:
+        continue # Should not happen based on categories_config
+
+    for i in range(count):
+        brand_obj = random.choice(list(brands.values()))
+        
+        # --- СПЕЦИАЛЬНАЯ ЛОГИКА ДЛЯ НЕКОТОРЫХ КАТЕГОРИЙ ---
+        
+        # 1. Ванны (нужен материал в аргументах)
+        if cat_name == "Ванны":
+            material = random.choice(["Акриловая", "Чугунная", "Стальная"])
+            specs = get_bath_specs(material)
+            size = f"{specs['Габариты']['Длина, см']}x{specs['Габариты']['Ширина, см']}"
+            name = f"{material} ванна {brand_obj.name} {size}"
+            
+        # 2. Комплекты (нужно собрать specs из унитаза + инсталляции)
+        elif cat_name == "Комплекты с унитазом":
+            specs_toilet = get_toilet_specs("Подвесной")
+            specs_install = get_installation_specs()
+            # Объединяем словари
+            specs = {**specs_toilet, "Инсталляция": specs_install["Габариты"]}
+            name = f"Комплект 4в1 {brand_obj.name} (Унитаз + Инсталляция + Кнопка)"
+            
+        # 3. Слив и канализация
+        elif cat_name == "Слив и канализация":
+            type_for = random.choice(["для раковины", "для ванны"])
+            specs = get_drain_specs(type_for)
+            name = f"Сифон {brand_obj.name} {type_for} {specs['Материал']['Материал']}"
+            
+        # 4. Стандартная логика для остальных
+        else:
+            subtype = random.choice(types)
+            specs = gen_func(subtype) if gen_func.__code__.co_argcount > 0 else gen_func()
+            
+            # Формируем красивое название из характеристик
+            extra_info = ""
+            
+            if "Размеры" in specs and "Ширина, см" in specs["Размеры"]:
+                extra_info = f"{specs['Размеры']['Ширина, см']} см"
+            elif "Габариты" in specs and "Размер, см" in specs["Габариты"]:
+                extra_info = specs["Габариты"]["Размер, см"]
+            elif "Основные" in specs and "Объем, л" in specs["Основные"]:
+                extra_info = f"{specs['Основные']['Объем, л']} л"
+            elif "Внешний вид" in specs and "Цвет" in specs["Внешний вид"]:
+                extra_info = specs["Внешний вид"]["Цвет"]
+            
+            series = random.choice(["Base", "Pro", "Style", "Soft", "Grand", "Unit", "Eco"])
+            name = f"{subtype} {brand_obj.name} {series} {extra_info}"
+
+        # Создание объекта
+        p = Product(
+            name=name.strip(),
+            description=f"Высококачественный товар из категории {cat_name}. Надежность и долговечность от бренда {brand_obj.name}.",
+            price=random.randint(1500, 80000),
+            old_price=random.randint(85000, 100000) if random.random() > 0.8 else None,
+            sku=f"SKU-{cat_name[:3].upper()}-{random.randint(10000, 99999)}",
+            in_stock=random.randint(5, 50),
+            category=cat_obj,
+            brand=brand_obj,
+            country=random.choice(["Германия", "Чехия", "Испания", "Россия", "Китай"]),
+            warranty=random.choice(["1 год", "2 года", "5 лет", "10 лет"]),
+            specifications=specs
         )
-        db.session.add(product)
-        products.append(product)
-
-db.session.flush()
-
-# Добавление изображений к товарам
-image_urls = [
-    "https://example.com/images/sanitary_1.jpg",
-    "https://example.com/images/sanitary_2.jpg",
-    "https://example.com/images/sanitary_3.jpg",
-    "https://example.com/images/sanitary_4.jpg",
-    "https://example.com/images/sanitary_5.jpg"
-]
-
-for product in products:
-    # Добавляем 1-3 изображения для каждого товара
-    num_images = random.randint(1, 3)
-    for j in range(num_images):
-        img = ProductImage(
-            product_id=product.id,
-            image_url=random.choice(image_urls),
-            sort_order=j
-        )
+        db.session.add(p)
+        
+        # Добавляем изображение
+        img = ProductImage(product=p, image_url="default_product.png", sort_order=0)
         db.session.add(img)
-
-# Добавление промокодов
-promo_codes = [
-    {"code": "WELCOME10", "type": "percent", "value": 10, "max_uses": 100},
-    {"code": "SALE20", "type": "percent", "value": 20, "max_uses": 50},
-    {"code": "NEWYEAR", "type": "fixed", "value": 1000, "max_uses": 20},
-    {"code": "SUMMER25", "type": "percent", "value": 25, "max_uses": 30},
-    {"code": "FREESHIP", "type": "fixed", "value": 500, "max_uses": 100}
-]
-
-for promo_data in promo_codes:
-    promo = PromoCode(
-        code=promo_data["code"],
-        discount_type=promo_data["type"],
-        value=promo_data["value"],
-        expires_at=datetime.now(timezone.utc) + timedelta(days=30),
-        is_active=True,
-        max_uses=promo_data["max_uses"],
-        times_used=0
-    )
-    db.session.add(promo)
-
-# Добавление отзывов
-for product in products[:20]:  # Только для первых 20 товаров
-    for _ in range(random.randint(0, 3)):  # 0-3 отзыва на товар
-        user = random.choice(users)
-        review = Review(
-            rating=random.randint(3, 5),
-            comment=f"Отличный товар! Очень доволен покупкой. Рекомендую к приобретению.",
-            user_id=user.id,
-            product_id=product.id,
-            created_at=datetime.now(timezone.utc) - timedelta(days=random.randint(1, 30))
-        )
-        db.session.add(review)
-
-# Добавление товаров в корзины пользователей
-for user in users:
-    for _ in range(random.randint(0, 5)):  # 0-5 товаров в корзине
-        product = random.choice(products)
-        # Проверяем, что товара еще нет в корзине у пользователя
-        existing_cart = Cart.query.filter_by(user_id=user.id, product_id=product.id).first()
-        if not existing_cart:
-            cart_item = Cart(
-                user_id=user.id,
-                product_id=product.id,
-                quantity=random.randint(1, 3)
-            )
-            db.session.add(cart_item)
-
-db.session.flush()
-
-# Добавление заказов
-for user in users[:4]:  # Создаем заказы для первых 4 пользователей
-    for _ in range(random.randint(1, 3)):  # 1-3 заказа на пользователя
-        # Выбираем несколько товаров для заказа
-        order_products = random.sample(products, random.randint(1, 4))
-
-        # Рассчитываем общую сумму заказа
-        total_amount = sum(float(product.price) * random.randint(1, 3) for product in order_products)
-
-        # Случайно выбираем промокод (в 30% случаев)
-        promo_code = None
-        if random.random() < 0.3 and promo_codes:
-            promo_code = random.choice(promo_codes)["code"]
-
-        # Рассчитываем скидку и итоговую сумму
-        discount_amount = 0
-        if promo_code:
-            promo = PromoCode.query.filter_by(code=promo_code).first()
-            if promo and promo.is_valid()[0]:
-                if promo.discount_type == "percent":
-                    discount_amount = total_amount * float(promo.value / 100)
-                elif promo.discount_type == "fixed":
-                    discount_amount = min(float(promo.value), total_amount)
-
-        final_amount = total_amount - discount_amount
-
-        order = Order(
-            total_amount=total_amount,
-            discount_amount=discount_amount,
-            final_amount=final_amount,
-            promo_code=promo_code,
-            status=random.choice(["Pending", "Processing", "Shipped", "Delivered", "Cancelled"]),
-            shipping_address=f"г. Москва, ул. Примерная, д. {random.randint(1, 20)}, кв. {random.randint(1, 100)}",
-            user_id=user.id,
-            created_at=datetime.now(timezone.utc) - timedelta(days=random.randint(1, 60))
-        )
-        db.session.add(order)
-
-        # Нужно выполнить flush, чтобы получить ID заказа перед добавлением элементов
-        db.session.flush()
-
-        # Добавляем элементы заказа
-        for product in order_products:
-            quantity = random.randint(1, 3)
-            order_item = OrderItem(
-                order_id=order.id,
-                product_id=product.id,
-                quantity=quantity,
-                price=float(product.price)
-            )
-            db.session.add(order_item)
+        
+        total_products += 1
 
 try:
     db.session.commit()
-    print("Данные успешно созданы!")
-    print(f"  Админ: admin@megamart.ru / admin123")
-    print(f"  Пользователей: {len(users) + 1}")  # +1 для администратора
-    print(f"  Товаров: {len(products)}")
-    print(f"  Категорий: {len(categories)}")
-    print(f"  Брендов: {len(brands)}")
-    print(f"  Промокодов: {len(promo_codes)}")
-    print(f"  Заказов: {len(Order.query.all())}")
-    print(f"  Отзывов: {len(Review.query.all())}")
-    print(f"  Элементов корзины: {len(Cart.query.all())}")
+    print("------------------------------------------------")
+    print(f"БД успешно обновлена!")
+    print(f"Категорий: {Category.query.count()} (Все 16 из ТЗ)")
+    print(f"Брендов: {Brand.query.count()}")
+    print(f"Товаров: {Product.query.count()}")
+    print("------------------------------------------------")
 except Exception as e:
     db.session.rollback()
-    print(f"Ошибка: {e}")
+    print(f"Ошибка при сохранении: {e}")

@@ -49,10 +49,29 @@
                 Нет в наличии
             </span>
             {% endif %}
-            <span class="text-muted small ms-2">Артикул: {{ product.sku }}</span>
         </div>
 
-        <h1 class="fw-bold mb-3">{{ product.name }}</h1>
+        <h1 class="fw-bold mb-2">{{ product.name }}</h1>
+
+        <!-- Мета-информация (Страна, Гарантия, Артикул) -->
+        <div class="d-flex flex-wrap gap-2 mb-4">
+            {% if product.country %}
+            <div class="product-meta-badge">
+                <i class="fas fa-globe-europe text-primary"></i>
+                <span>{{ product.country }}</span>
+            </div>
+            {% endif %}
+            {% if product.warranty %}
+            <div class="product-meta-badge">
+                <i class="fas fa-shield-check text-success"></i>
+                <span>Гарантия {{ product.warranty }}</span>
+            </div>
+            {% endif %}
+            <div class="product-meta-badge">
+                <i class="fas fa-barcode text-muted"></i>
+                <span>{{ product.sku }}</span>
+            </div>
+        </div>
 
         <div class="d-flex align-items-center mb-4">
             <div class="text-warning me-2">
@@ -99,7 +118,6 @@
                     {{ 'Добавить в корзину' if product.in_stock > 0 else 'Нет в наличии' }}
                 </button>
 
-                <!-- Wishlist Button -->
                 <button type="button" class="btn btn-outline-secondary btn-lg btn-wishlist"
                     data-product-id="{{ product.id }}">
                     {% if current_user.is_authenticated and product in current_user.wishlist.all() %}
@@ -132,30 +150,92 @@
     </div>
 </div>
 
-<!-- Tabs: Description & Reviews -->
+<!-- Tabs: Description & Specs & Reviews -->
 <div class="row">
     <div class="col-12">
         <ul class="nav nav-tabs nav-fill mb-4" id="productTabs" role="tablist">
-            <li class="nav-item" role="presentation">
+            <li class="nav-item">
                 <button class="nav-link active fw-bold" id="desc-tab" data-bs-toggle="tab" data-bs-target="#desc"
-                    type="button" role="tab">Описание</button>
+                    type="button">Описание</button>
             </li>
-            <li class="nav-item" role="presentation">
+            <li class="nav-item">
+                <button class="nav-link fw-bold" id="specs-tab" data-bs-toggle="tab" data-bs-target="#specs"
+                    type="button">Характеристики</button>
+            </li>
+            <li class="nav-item">
                 <button class="nav-link fw-bold" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews"
-                    type="button" role="tab">Отзывы <span class="badge bg-secondary rounded-pill ms-1">{{ reviews|length
+                    type="button">Отзывы <span class="badge bg-secondary rounded-pill ms-1">{{ reviews|length
                         }}</span></button>
             </li>
         </ul>
 
-        <div class="tab-content" id="productTabsContent">
-            <!-- Description Tab -->
+        <div class="tab-content bg-surface p-4 rounded-3 border shadow-sm" id="productTabsContent">
+
+            <!-- 1. Description Tab -->
             <div class="tab-pane fade show active" id="desc" role="tabpanel">
-                <div class="bg-surface p-4 rounded-3 border">
-                    <p class="lead">{{ product.description }}</p>
+                <h4 class="fw-bold mb-3">О товаре</h4>
+                <p class="lead mb-4">{{ product.description }}</p>
+
+                {% if product.specifications %}
+                <h5 class="fw-bold mb-3">Ключевые особенности:</h5>
+                <ul class="list-unstyled">
+                    {% for group, items in product.specifications.items() %}
+                    {% if loop.index <= 2 %} {% for key, val in items.items() %} {% if loop.index <=2 %} <li
+                        class="mb-2 d-flex align-items-start">
+                        <i class="fas fa-check-circle text-success mt-1 me-2"></i>
+                        <div>
+                            <strong>{{ key }}:</strong> {{ val }}
+                        </div>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+                        {% endif %}
+                        {% endfor %}
+                </ul>
+
+                <div class="mt-4 p-3 bg-light rounded border-start border-4 border-primary">
+                    <p class="mb-0 small text-muted">
+                        Производитель оставляет за собой право вносить изменения в конструкцию и комплектацию изделия
+                        без предварительного уведомления.
+                    </p>
                 </div>
+
+                <div class="mt-4">
+                    <button class="btn btn-outline-primary btn-sm"
+                        onclick="document.getElementById('specs-tab').click()">
+                        Перейти ко всем характеристикам
+                    </button>
+                </div>
+                {% endif %}
             </div>
 
-            <!-- Reviews Tab -->
+            <!-- 2. Specs Tab (Table with dots) -->
+            <div class="tab-pane fade" id="specs" role="tabpanel">
+                <h4 class="fw-bold mb-4">Технические характеристики</h4>
+
+                {% if product.specifications %}
+                <div class="row">
+                    <div class="col-lg-8">
+                        {% for group_name, specs_dict in product.specifications.items() %}
+                        <div class="specs-group">
+                            <div class="specs-group-title">{{ group_name }}</div>
+                            {% for key, value in specs_dict.items() %}
+                            <div class="spec-item">
+                                <span class="spec-key">{{ key }}</span>
+                                <span class="spec-dots"></span>
+                                <span class="spec-value">{{ value }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-muted">Для этого товара характеристики не указаны.</p>
+                {% endif %}
+            </div>
+
+            <!-- 3. Reviews Tab -->
             <div class="tab-pane fade" id="reviews" role="tabpanel">
                 <div class="row">
                     <div class="col-lg-8">
@@ -187,7 +267,6 @@
                         {% endif %}
                     </div>
 
-                    <!-- Review Form -->
                     <div class="col-lg-4">
                         <div class="card shadow-sm border-0">
                             <div class="card-body p-4">

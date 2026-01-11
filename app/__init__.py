@@ -1,4 +1,9 @@
-from flask import Flask, redirect, url_for, request, flash, abort
+import sentry_sdk
+import os
+import logging
+import json
+import socket
+from flask import Flask, redirect, url_for, request, flash, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user
 from flask_admin import Admin
@@ -16,10 +21,9 @@ from flask_talisman import Talisman
 from flask_assets import Environment, Bundle
 from flask_mail import Mail
 from config import config
-import os
-import logging
 from logging.handlers import SMTPHandler, RotatingFileHandler
 from celery import Celery
+from slugify import slugify
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -53,13 +57,63 @@ class SecureModelView(ModelView):
 def create_app(config_name="default"):
     app = Flask(__name__)
     app.config.from_object(config[config_name])
+    
+    # Initialize Sentry for error tracking
+    if app.config.get("SENTRY_DSN"):
+        sentry_sdk.init(
+            dsn=app.config["SENTRY_DSN"],
+            traces_sample_rate=0.1,
+            profiles_sample_rate=0.1,
+        )
+    
+    # <--- 2. ДОБАВИТЬ ЭТУ СТРОКУ (Регистрация фильтра)
+    app.jinja_env.filters['slugify'] = slugify 
+
+    # Health check endpoint
+    @app.route("/health")
+    def health_check():
+        """Health check endpoint for load balancers and monitoring"""
+        health_status = {
+            "status": "healthy",
+            "version": "1.0.0",
+            "database": "unknown",
+            "cache": "unknown",
+        }
+        
+        # Check database connection
+        try:
+            db.session.execute(db.text("SELECT 1"))
+            health_status["database"] = "connected"
+        except Exception as e:
+            health_status["database"] = f"error: {str(e)}"
+            health_status["status"] = "unhealthy"
+        
+        # Check cache connection
+        try:
+            cache.get("health_check_key")
+            health_status["cache"] = "connected"
+        except Exception as e:
+            health_status["cache"] = f"error: {str(e)}"
+        
+        status_code = 200 if health_status["status"] == "healthy" else 503
+        return jsonify(health_status), status_code
+
     if not app.config["DEBUG"] and not app.config["TESTING"]:
-        Talisman(app)
+        Talisman(app, content_security_policy=None)  # CSP can be customized per need
     db.init_app(app)
     login_manager.init_app(app)
     cache.init_app(app)
     migrate.init_app(app, db)
     csrf.init_app(app)
+    
+    # Configure rate limiting with Redis storage
+    from flask_limiter import Redis
+    try:
+        redis_client = Redis.from_url(app.config["CACHE_REDIS_URL"])
+        limiter.storage_uri = app.config["CACHE_REDIS_URL"]
+    except Exception:
+        pass  # Fall back to in-memory storage if Redis is not available
+    
     limiter.init_app(app)
     assets.init_app(app)
     mail.init_app(app)
@@ -70,9 +124,14 @@ def create_app(config_name="default"):
     )
     assets.register("css_all", css_bundle)
     assets.register("js_all", js_bundle)
+
+    # ... (далее код без изменений) ...
     if not app.debug and not app.testing:
-        if not os.path.exists("logs"):
-            os.mkdir("logs")
+        # Create logs directory if it doesn't exist
+        logs_dir = "logs"
+        if not os.path.exists(logs_dir):
+            os.makedirs(logs_dir, exist_ok=True)
+            
         file_handler = RotatingFileHandler(
             "logs/megamart.log", maxBytes=10240, backupCount=10
         )
@@ -83,6 +142,60 @@ def create_app(config_name="default"):
         )
         file_handler.setLevel(logging.INFO)
         app.logger.addHandler(file_handler)
+        
+        # Logstash handler for ELK integration
+        logstash_host = os.environ.get("LOGSTASH_HOST", "localhost")
+        logstash_port = int(os.environ.get("LOGSTASH_PORT", 5044))
+        
+        class LogstashHandler(logging.Handler):
+            """Custom handler to send logs to Logstash via TCP"""
+            def __init__(self, host, port):
+                super().__init__()
+                self.host = host
+                self.port = port
+                self.socket = None
+                
+            def emit(self, record):
+                try:
+                    log_entry = {
+                        "timestamp": datetime.utcnow().isoformat(),
+                        "level": record.levelname,
+                        "logger": record.name,
+                        "message": self.format(record),
+                        "pathname": record.pathname,
+                        "lineno": record.lineno,
+                        "func": record.funcName,
+                        "service": "megamart",
+                        "environment": app.config.get("FLASK_CONFIG", "unknown"),
+                        "hostname": socket.gethostname(),
+                        "app_version": "1.0.0",
+                    }
+                    
+                    # Добавляем extra поля если есть
+                    if hasattr(record, "user_id"):
+                        log_entry["user_id"] = record.user_id
+                    if hasattr(record, "request_id"):
+                        log_entry["request_id"] = record.request_id
+                        
+                    import json
+                    msg = json.dumps(log_entry) + "\n"
+                    
+                    # Создаем сокет только когда нужно отправить
+                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    sock.settimeout(5)
+                    sock.connect((self.host, self.port))
+                    sock.sendall(msg.encode())
+                    sock.close()
+                except Exception:
+                    pass  # Игнорируем ошибки отправки логов
+        
+        try:
+            logstash_handler = LogstashHandler(logstash_host, logstash_port)
+            logstash_handler.setLevel(logging.ERROR)
+            app.logger.addHandler(logstash_handler)
+        except Exception:
+            pass  # Logstash может быть недоступен
+        
         if app.config["MAIL_SERVER"]:
             auth = None
             if app.config["MAIL_USERNAME"] or app.config["MAIL_PASSWORD"]:
@@ -173,6 +286,9 @@ def create_app(config_name="default"):
             "brand",
             "meta_title",
             "meta_description",
+            "country",        # Добавлено для админки
+            "warranty",       # Добавлено для админки
+            "specifications", # Добавлено для админки
         ]
 
         inline_models = [

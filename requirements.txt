@@ -28,6 +28,9 @@ python-slugify==8.0.4
 PyMySQL==1.1.0
 redis==5.0.4
 SQLAlchemy==2.0.29
+gunicorn==21.2.0
+sentry-sdk[flask]==2.0.0
 Werkzeug==3.0.2
 WTForms==3.1.2
 yookassa==2.14.0
+boto3==1.35.0

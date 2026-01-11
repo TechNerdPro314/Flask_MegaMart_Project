@@ -47,49 +47,49 @@
     <!-- Header / Navbar -->
     <header class="sticky-top">
         <nav class="navbar navbar-expand-lg navbar-glass">
-            <div class="container">
+            <div class="container position-relative">
                 <!-- Brand -->
-                <a class="navbar-brand animate__animated animate__fadeInLeft" href="{{ url_for('main.index') }}">
+                <a class="navbar-brand animate__animated animate__fadeInLeft me-4" href="{{ url_for('main.index') }}">
                     <i class="fa-solid fa-faucet-drip"></i>
                     <span>MegaMart</span>
                 </a>
 
+                <!-- Catalog Button (Updated Design) -->
+                <!-- me-auto толкает всё содержимое справа к краю -->
+                <a class="btn btn-primary rounded-pill px-4 py-2 fw-bold fs-6 me-auto d-none d-lg-flex align-items-center gap-2 shadow-sm"
+                    href="{{ url_for('main.catalog') }}" style="min-width: 140px; justify-content: center;">
+                    <i class="fa-solid fa-bars"></i> Каталог
+                </a>
+
                 <!-- Mobile Toggle -->
-                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
+                <button class="navbar-toggler border-0 ms-auto me-2" type="button" data-bs-toggle="collapse"
                     data-bs-target="#navbarContent">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <!-- Nav Content -->
-                <div class="collapse navbar-collapse" id="navbarContent">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('main.index') }}">Главная</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('main.catalog') }}">Каталог</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('main.about') }}">О нас</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('main.shipping') }}">Доставка</a>
-                        </li>
-                    </ul>
+                <!-- Nav Content (Right Side) -->
+                <div class="collapse navbar-collapse flex-grow-0" id="navbarContent">
 
-                    <!-- Search Form -->
-                    <form class="d-flex me-lg-3 mb-3 mb-lg-0" action="{{ url_for('main.catalog') }}" method="get">
-                        <div class="input-group">
-                            <input class="form-control border-end-0 rounded-start-pill ps-3" type="search"
-                                name="search_query" placeholder="Поиск товаров..." aria-label="Search">
-                            <button class="btn btn-outline-secondary border-start-0 rounded-end-pill" type="submit">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </div>
-                    </form>
+                    <!-- Mobile Catalog Link (Visible only on mobile) -->
+                    <div class="d-lg-none mb-3 mt-2">
+                        <a class="nav-link fw-bold" href="{{ url_for('main.catalog') }}">
+                            <i class="fas fa-list me-2"></i>Каталог товаров
+                        </a>
+                    </div>
 
-                    <!-- Right Actions -->
-                    <div class="d-flex align-items-center gap-3">
+                    <div class="d-flex align-items-center gap-2 gap-lg-4 flex-wrap">
+
+                        <!-- Search (Expanding) -->
+                        <form action="{{ url_for('main.catalog') }}" method="get" class="me-lg-2">
+                            <div class="search-expandable">
+                                <input class="search-input-expand" type="search" name="search_query"
+                                    placeholder="Поиск товаров..." aria-label="Search" autocomplete="off">
+                                <button class="search-btn-icon" type="submit">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </form>
+
                         <!-- Theme Toggle -->
                         <button class="theme-toggle-btn" id="theme-toggle" aria-label="Переключить тему">
                             <i class="fas fa-moon"></i>
@@ -97,9 +97,9 @@
 
                         <!-- Wishlist -->
                         <a href="{{ url_for('main.wishlist') }}"
-                            class="btn btn-outline-danger border-0 position-relative rounded-circle p-2 me-2"
-                            style="width: 40px; height: 40px;" title="Избранное">
-                            <i class="far fa-heart"></i>
+                            class="btn btn-light border-0 position-relative rounded-circle p-2 text-danger hover-scale"
+                            style="width: 42px; height: 42px;" title="Избранное">
+                            <i class="far fa-heart fs-5"></i>
                             {% if current_user.is_authenticated %}
                             {% set wishlist_count = current_user.wishlist.count() %}
                             <span
@@ -110,9 +110,9 @@
 
                         <!-- Cart -->
                         <a href="{{ url_for('cart_app.cart_view') }}"
-                            class="btn btn-outline-primary border-0 position-relative rounded-circle p-2"
-                            style="width: 40px; height: 40px;">
-                            <i class="fas fa-shopping-cart"></i>
+                            class="btn btn-light border-0 position-relative rounded-circle p-2 text-primary hover-scale"
+                            style="width: 42px; height: 42px;" title="Корзина">
+                            <i class="fas fa-shopping-cart fs-5"></i>
                             {% set cart_count = current_user.cart_items.count() if current_user.is_authenticated else
                             session.get('cart', {})|length %}
                             {% if cart_count > 0 %}
@@ -120,15 +120,15 @@
                             {% endif %}
                         </a>
 
-                        <!-- User Menu -->
+                        <!-- User Menu / Login -->
                         {% if current_user.is_authenticated %}
                         <div class="dropdown">
-                            <button class="btn btn-primary dropdown-toggle rounded-pill px-3" type="button"
-                                id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-user-circle me-1"></i>
-                                {{ current_user.name.split()[0] }}
+                            <button class="btn btn-primary rounded-pill px-4 fw-bold" type="button" id="userDropdown"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-circle me-2"></i>
+                                <span class="d-none d-sm-inline">{{ current_user.name.split()[0] }}</span>
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0"
+                            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2"
                                 aria-labelledby="userDropdown">
                                 {% if current_user.is_admin %}
                                 <li><a class="dropdown-item" href="{{ url_for('admin.index') }}"><i
@@ -141,12 +141,16 @@
                                             class="fas fa-user me-2 text-muted"></i>Профиль</a></li>
                                 <li><a class="dropdown-item" href="{{ url_for('main.wishlist') }}"><i
                                             class="fas fa-heart me-2 text-muted"></i>Избранное</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}"><i
-                                            class="fas fa-sign-out-alt me-2 text-muted"></i>Выйти</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}"><i
+                                            class="fas fa-sign-out-alt me-2"></i>Выйти</a></li>
                             </ul>
                         </div>
                         {% else %}
-                        <a href="{{ url_for('auth.login') }}" class="btn btn-primary rounded-pill px-4">Войти</a>
+                        <a href="{{ url_for('auth.login') }}"
+                            class="btn btn-primary rounded-pill px-4 fw-bold">Войти</a>
                         {% endif %}
                     </div>
                 </div>

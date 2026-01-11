@@ -1,23 +1,56 @@
 version: '3.8'
 
 services:
-  # Сервис веб-приложения Flask
-  web:
-    build: .
-    command: waitress-serve --host 0.0.0.0 --port 8000 run:app
-    volumes:
-      - .:/app
+  # Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    restart: always
     ports:
-      - "8000:8000"
-    env_file:
-      - .env
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./production_nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - static_files:/app/static/uploads:ro
+      - gen_files:/app/gen:ro
+      - nginx_logs:/var/log/nginx
     depends_on:
-      - db
-      - redis
+      - web
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
 
-  # Сервис базы данных MySQL
+  # Redis для кэширования и Celery
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+  # MySQL база данных
   db:
     image: mysql:8.0
+    restart: always
     ports:
       - "3306:3306"
     environment:
@@ -27,24 +60,218 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./backup_manager.py:/app/backup_manager.py:ro
+      - backups:/app/backups
+      - mysql_logs:/var/log/mysql
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --general-log=1
+      --general-log-file=/var/log/mysql/mysql.log
+      --slow-query-log=1
+      --long-query-time=2
+      --slow-query-log-file=/var/log/mysql/mysql-slow.log
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
 
-  # Сервис Redis для Celery и кэширования
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-
-  # Сервис для фоновых задач Celery
-  worker:
+  # Flask веб-приложение
+  web:
     build: .
-    command: celery -A celery_worker.celery worker --loglevel=info
-    volumes:
-      - .:/app
+    restart: always
+    ports:
+      - "8000:8000"
     env_file:
       - .env
     depends_on:
-      - redis
-      - db
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - FLASK_CONFIG=production
+      - DATABASE_URI=mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db/${MYSQL_DATABASE}
+      - CACHE_TYPE=RedisCache
+      - CACHE_REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      # Logstash logging
+      - LOGSTASH_HOST=logstash
+      - LOGSTASH_PORT=5044
+    volumes:
+      - static_files:/app/static/uploads
+      - gen_files:/app/gen
+      - app_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+
+  # Celery worker
+  worker:
+    build: .
+    restart: always
+    command: celery -A app.celery worker --loglevel=info
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    environment:
+      - FLASK_CONFIG=production
+      - DATABASE_URI=mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db/${MYSQL_DATABASE}
+      - CACHE_REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    volumes:
+      - app_logs:/app/logs
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  # ==========================================
+  # ELK Stack для централизованного логирования
+  # ==========================================
+
+  # Elasticsearch - хранилище логов
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    restart: always
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - cluster.name=megamart-logs
+      - bootstrap.memory_lock=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -vq '\"status\":\"red\"'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # Logstash - обработка и маршрутизация логов
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.0
+    restart: always
+    environment:
+      - LS_JAVA_OPTS=-Xms256m -Xmx256m
+    ports:
+      - "5044:5044"
+      - "5000:5000/udp"
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - app_logs:/var/log/megamart:ro
+      - mysql_logs:/var/log/mysql:ro
+      - nginx_logs:/var/log/nginx:ro
+    depends_on:
+      - elasticsearch
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  # Kibana - визуализация логов
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    restart: always
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    volumes:
+      - kibana_data:/usr/share/kibana/data
+    depends_on:
+      - elasticsearch
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:5601/api/status | grep -q '\"level\":\"available\"'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Filebeat - сбор логов с хостов
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.11.0
+    restart: always
+    user: root
+    volumes:
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - app_logs:/var/log/megamart:ro
+      - nginx_logs:/var/log/nginx:ro
+      - mysql_logs:/var/log/mysql:ro
+      - docker_logs:/var/lib/docker/containers:ro
+      - filebeat_data:/usr/share/filebeat/data
+    depends_on:
+      - logstash
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+  # Backup сервис (опционально, по расписанию)
+  backup:
+    build:
+      context: .
+      dockerfile: Dockerfile.backup
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - backups:/app/backups
+      - mysql_data:/var/lib/mysql:ro
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_PORT=3306
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - BACKUP_DIR=/app/backups
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
 
 volumes:
   mysql_data:
+  redis_data:
+  static_files:
+  gen_files:
+  app_logs:
+  nginx_logs:
+  mysql_logs:
+  backups:
+  elasticsearch_data:
+  kibana_data:
+  filebeat_data:
+  docker_logs:

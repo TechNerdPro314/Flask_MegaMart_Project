@@ -15,15 +15,27 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Копируем файл зависимостей и устанавливаем их
-# Это делается отдельно, чтобы Docker мог кэшировать этот слой
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Копируем весь код проекта в рабочую директорию
 COPY . .
 
+# Создаем директорию для логов
+RUN mkdir -p logs
+
+# Устанавливаем владельца для файлов
+RUN useradd -m appuser && chown -R appuser:appuser /app
+
 # Открываем порт, на котором будет работать приложение
 EXPOSE 8000
 
-# Команда для запуска приложения (может быть переопределена в docker-compose)
-CMD ["waitress-serve", "--host", "0.0.0.0", "--port", "8000", "run:app"]
+# Healthcheck для Docker
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
+
+# Переключаемся на непривилегированного пользователя
+USER appuser
+
+# Команда для запуска приложения с использованием gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "4", "--timeout", "120", "--keep-alive", "5", "--access-logfile", "-", "--error-logfile", "-", "run:app"]

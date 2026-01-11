@@ -15,6 +15,7 @@ from flask_login import current_user, login_required
 from app import db, cache
 from app.models import Product, Category, Brand, ProductImage, Review, Order, User
 from app.forms import ReviewForm
+from app.utils import get_category_filters, filter_products_by_specs
 from datetime import datetime
 from . import main_bp
 from sqlalchemy.orm import joinedload, selectinload
@@ -60,12 +61,11 @@ def index():
 
 @main_bp.route("/catalog/")
 @main_bp.route("/catalog/<slug>")
-@cache.cached(
-    timeout=300, query_string=True, unless=lambda: current_user.is_authenticated
-)
 def catalog(slug=None):
     page = request.args.get("page", 1, type=int)
     per_page = 24
+    
+    # Базовый запрос
     query = Product.query.options(
         joinedload(Product.category),
         joinedload(Product.brand),
@@ -73,18 +73,24 @@ def catalog(slug=None):
     )
 
     current_category = None
+    dynamic_filters = {}
+
     if slug:
         current_category = Category.query.filter_by(slug=slug).first_or_404()
         query = query.filter(Product.category_id == current_category.id)
+        
+        # 1. Генерируем фильтры для этой категории
+        dynamic_filters = get_category_filters(current_category.id)
 
+    # Стандартные фильтры (SQL)
     search_query = request.args.get("search_query", type=str)
-    brand_id = request.args.get("brand_id", type=int)
+    brand_ids = request.args.getlist("brand_id", type=int) # getlist для мультивыбора
     min_price = request.args.get("min_price", type=float)
     max_price = request.args.get("max_price", type=float)
     sort_by = request.args.get("sort_by", "price_asc")
 
-    if brand_id:
-        query = query.filter(Product.brand_id == brand_id)
+    if brand_ids:
+        query = query.filter(Product.brand_id.in_(brand_ids))
     if min_price is not None and min_price >= 0:
         query = query.filter(Product.price >= min_price)
     if max_price is not None and max_price >= 0:
@@ -92,6 +98,11 @@ def catalog(slug=None):
     if search_query:
         query = query.filter(Product.name.ilike(f"%{search_query}%"))
 
+    # 2. Применяем фильтрацию по JSON (Python-level для совместимости)
+    if slug and request.args:
+        query = filter_products_by_specs(query, request.args)
+
+    # Сортировка
     if sort_by == "price_desc":
         query = query.order_by(Product.price.desc())
     elif sort_by == "name_asc":
@@ -99,6 +110,7 @@ def catalog(slug=None):
     else:
         query = query.order_by(Product.price.asc())
 
+    # Пагинация
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     products = pagination.items
     products = add_first_image_to_products(products)
@@ -106,31 +118,23 @@ def catalog(slug=None):
     all_categories = Category.query.all()
     all_brands = Brand.query.all()
 
-    title = (
-        current_category.meta_title
-        if current_category and current_category.meta_title
-        else (current_category.name if current_category else "Каталог")
-    )
-    meta_description = (
-        current_category.meta_description
-        if current_category and current_category.meta_description
-        else "Широкий выбор сантехники в нашем каталоге."
-    )
-
+    # Meta
+    title = current_category.name if current_category else "Каталог"
+    
     return render_template(
         "catalog.html",
         title=title,
-        meta_description=meta_description,
         products=products,
         pagination=pagination,
         all_categories=all_categories,
         all_brands=all_brands,
         current_category=current_category,
-        current_brand_id=brand_id,
+        current_brand_ids=brand_ids, # передаем список
         current_min_price=min_price,
         current_max_price=max_price,
-        current_search_query=search_query,
         current_sort_by=sort_by,
+        dynamic_filters=dynamic_filters, # Передаем фильтры в шаблон
+        request_args=request.args # Для сохранения состояния чекбоксов
     )
 
 

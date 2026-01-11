@@ -1,0 +1,70 @@
+# Filebeat Configuration для сбора логов Flask приложения
+filebeat.inputs:
+  # Flask application logs
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/megamart/*.log
+    fields:
+      app: megamart
+      environment: production
+    fields_under_root: true
+    multiline:
+      pattern: '^\d{4}-\d{2}-\d{2}'
+      negate: true
+      match: after
+    json:
+      keys_under_root: true
+      overwrite_keys: true
+
+  # Nginx access logs
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/nginx/*.log
+    fields:
+      app: megamart
+      log_type: nginx_access
+    fields_under_root: true
+
+  # Docker container logs
+  - type: container
+    paths:
+      - /var/lib/docker/containers/*/*-json.log
+    fields:
+      app: megamart
+      log_source: docker
+    fields_under_root: true
+
+output.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+  protocol: "http"
+  username: "${ELASTICSEARCH_USERNAME:}"
+  password: "${ELASTICSEARCH_PASSWORD:}"
+  ssl.enabled: false
+
+setup.kibana:
+  host: "kibana:5601"
+
+setup.template.name: "megamart-logs"
+setup.template.pattern: "megamart-logs-*"
+setup.template.settings.index.number_of_shards: 1
+setup.template.settings.index.codec: best_compression
+
+processors:
+  - add_host_metadata:
+      when.not.contains.tags: forwarded
+  - add_docker_metadata: ~
+  - add_fields:
+      target: ''
+      fields:
+        service.name: megamart
+        service.version: 1.0.0
+
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: /var/log/filebeat
+  name: filebeat
+  keepfiles: 7
+  permissions: 0644

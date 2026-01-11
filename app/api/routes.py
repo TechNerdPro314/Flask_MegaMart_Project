@@ -1,7 +1,7 @@
 from flask import jsonify, request, url_for, current_app
 from flask_login import login_required, current_user
 from app.models import Product, Cart
-from app import db
+from app import db, limiter
 from . import api_bp
 from .schemas import (
     CartAddItemSchema,
@@ -13,6 +13,7 @@ from .schemas import (
 
 @api_bp.route("/cart/add", methods=["POST"])
 @login_required
+@limiter.limit("30 per minute")
 def api_add_to_cart():
     """AJAX: Добавить товар в корзину"""
     data = request.get_json()

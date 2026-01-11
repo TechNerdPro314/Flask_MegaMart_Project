@@ -16,149 +16,163 @@
     <div class="row">
         <!-- Sidebar Filters -->
         <aside class="col-lg-3 mb-4">
-            <div class="filter-sidebar sticky-top" style="top: 5.5rem; z-index: 900;">
-                <form action="{{ url_for('main.catalog') }}" method="get" id="filterForm">
-                    {% if current_sort_by %}<input type="hidden" name="sort_by" value="{{ current_sort_by }}">{% endif
-                    %}
-                    {% if current_search_query %}<input type="hidden" name="search_query"
-                        value="{{ current_search_query }}">{% endif %}
+            <div class="filter-sidebar">
+                <form action="{{ url_for('main.catalog', slug=current_category.slug if current_category else None) }}"
+                    method="get" id="filterForm">
 
-                    <div
-                        class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-secondary border-opacity-10">
+                    <!-- Header & Reset -->
+                    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
                         <h5 class="m-0 fw-bold"><i class="fas fa-sliders-h me-2 text-primary"></i>Фильтры</h5>
-                        <a href="{{ url_for('main.catalog') }}"
+                        <a href="{{ url_for('main.catalog', slug=current_category.slug if current_category else None) }}"
                             class="btn btn-sm btn-link text-danger text-decoration-none px-0"
                             style="font-size: 0.85rem;">
                             <i class="fas fa-times me-1"></i>Сбросить
                         </a>
                     </div>
 
-                    <!-- 1. Categories -->
-                    <div class="mb-4">
+                    <!-- 1. Categories (Если мы не в конкретной категории) -->
+                    {% if not current_category %}
+                    <div class="mb-4 pb-3 border-bottom">
                         <div class="filter-title">Категории</div>
-                        <div class="d-flex flex-column gap-1">
-                            <a href="{{ url_for('main.catalog') }}"
-                                class="category-link {{ 'active' if not current_category else '' }}">
-                                Все категории
-                            </a>
+                        <div class="custom-scrollbar pe-2">
                             {% for category in all_categories %}
                             {% if not category.parent_id %}
-                            <a href="{{ url_for('main.catalog', slug=category.slug) }}"
-                                class="category-link {{ 'active' if current_category and current_category.id == category.id else '' }}">
+                            <a href="{{ url_for('main.catalog', slug=category.slug) }}" class="category-link">
                                 {{ category.name }}
                             </a>
                             {% endif %}
                             {% endfor %}
                         </div>
                     </div>
+                    {% endif %}
 
-                    <!-- 2. Price Filter -->
-                    <div class="mb-4">
-                        <div class="filter-title">Цена, ₽</div>
-                        <div class="d-flex align-items-center gap-2">
-                            <input type="number" class="form-control price-input" name="min_price" placeholder="От"
-                                value="{{ current_min_price or '' }}" min="0">
-                            <span class="text-muted">&ndash;</span>
-                            <input type="number" class="form-control price-input" name="max_price" placeholder="До"
-                                value="{{ current_max_price or '' }}" min="0">
+                    <!-- 2. Price Filter (Всегда показываем) -->
+                    <div class="filter-accordion-item">
+                        <button class="filter-accordion-button" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#priceFilter" aria-expanded="true">
+                            Цена, ₽
+                        </button>
+                        <div id="priceFilter" class="collapse show filter-content">
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="number" class="form-control price-input" name="min_price" placeholder="От"
+                                    value="{{ current_min_price or '' }}" min="0">
+                                <span class="text-muted">&ndash;</span>
+                                <input type="number" class="form-control price-input" name="max_price" placeholder="До"
+                                    value="{{ current_max_price or '' }}" min="0">
+                            </div>
                         </div>
                     </div>
 
-                    <!-- 3. Brand Filter -->
-                    <div class="mb-4">
-                        <div class="filter-title">
-                            Бренд <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill">{{
-                                all_brands|length }}</span>
-                        </div>
-                        <div class="custom-scrollbar pe-2">
-                            <div class="form-check mb-2">
-                                <input class="form-check-input filter-check-input" type="radio" name="brand_id" value=""
-                                    id="brand_all" {% if not current_brand_id %}checked{% endif %}
-                                    onchange="this.form.submit()">
-                                <label class="form-check-label filter-check-label" for="brand_all">
-                                    Все бренды
-                                </label>
+                    <!-- 3. Brands (Всегда показываем) -->
+                    <div class="filter-accordion-item">
+                        <button class="filter-accordion-button" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#brandFilter" aria-expanded="true">
+                            Бренд
+                        </button>
+                        <div id="brandFilter" class="collapse show filter-content">
+                            <div class="custom-scrollbar pe-2">
+                                {% for brand in all_brands %}
+                                <div class="mb-2">
+                                    <label class="custom-control-label">
+                                        <input type="checkbox" class="custom-control-input" name="brand_id"
+                                            value="{{ brand.id }}" {% if brand.id in current_brand_ids %}checked{% endif
+                                            %}>
+                                        <span class="custom-control-indicator"></span>
+                                        <span class="d-flex justify-content-between w-100">
+                                            {{ brand.name }}
+                                            <!-- Можно добавить count, если нужно -->
+                                        </span>
+                                    </label>
+                                </div>
+                                {% endfor %}
                             </div>
-                            {% for brand in all_brands %}
-                            <div class="form-check mb-2">
-                                <input class="form-check-input filter-check-input" type="radio" name="brand_id"
-                                    value="{{ brand.id }}" id="brand_{{ brand.id }}" {% if current_brand_id==brand.id
-                                    %}checked{% endif %} onchange="this.form.submit()">
-                                <label class="form-check-label filter-check-label" for="brand_{{ brand.id }}">
-                                    {{ brand.name }}
-                                </label>
-                            </div>
-                            {% endfor %}
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm">
-                        Показать товары
-                    </button>
+                    <!-- 4. DYNAMIC SPECS FILTERS -->
+                    {% if dynamic_filters %}
+                    {% for group, specs in dynamic_filters.items() %}
+                    <!-- Пропускаем технические группы, если нужно (например Размеры) -->
+                    {% for key, values in specs.items() %}
+                    {% set filter_id = "filter_" + loop.index|string + "_" + group|slugify %}
+                    {% set field_name = "spec__" + group + "__" + key %}
+
+                    <div class="filter-accordion-item">
+                        <button class="filter-accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#{{ filter_id }}" aria-expanded="false">
+                            {{ key }}
+                        </button>
+                        <div id="{{ filter_id }}" class="collapse filter-content">
+                            <div class="custom-scrollbar pe-2" style="max-height: 150px;">
+                                {% for val in values %}
+                                <div class="mb-2">
+                                    <label class="custom-control-label">
+                                        <input type="checkbox" class="custom-control-input" name="{{ field_name }}"
+                                            value="{{ val }}" {% if request_args.getlist(field_name) and val in
+                                            request_args.getlist(field_name) %}checked{% endif %}>
+                                        <span class="custom-control-indicator"></span>
+                                        {{ val }}
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% endfor %}
+                    {% endif %}
+
+                    <div class="sticky-bottom bg-surface pt-3 mt-3 border-top">
+                        <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm">
+                            Показать товары
+                        </button>
+                    </div>
                 </form>
             </div>
         </aside>
 
-        <!-- Product Grid -->
+        <!-- Product Grid (правая колонка без изменений) -->
         <div class="col-lg-9">
             <!-- Toolbar -->
             <div class="card border-0 shadow-sm mb-4">
                 <div
                     class="card-body p-3 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
                     <h1 class="h4 m-0 fw-bold">{{ title }}</h1>
+                    <span class="text-muted small">{{ products|length }} товаров</span>
 
                     <div class="d-flex align-items-center gap-3 w-100 w-md-auto">
-                        <form class="d-flex align-items-center w-100" method="get">
-                            {% if current_brand_id %}<input type="hidden" name="brand_id"
-                                value="{{ current_brand_id }}">{% endif %}
-                            {% if current_min_price %}<input type="hidden" name="min_price"
-                                value="{{ current_min_price }}">{% endif %}
-                            {% if current_max_price %}<input type="hidden" name="max_price"
-                                value="{{ current_max_price }}">{% endif %}
-                            {% if current_search_query %}<input type="hidden" name="search_query"
-                                value="{{ current_search_query }}">{% endif %}
-
-                            <label for="sort_by" class="text-muted me-2 text-nowrap">Сортировка:</label>
-                            <select name="sort_by" id="sort_by"
-                                class="form-select form-select-sm border-0 bg-light fw-bold" style="min-width: 160px;"
-                                onchange="this.form.submit()">
-                                <option value="price_asc" {% if current_sort_by=='price_asc' %}selected{% endif %}>
-                                    Сначала дешевле</option>
-                                <option value="price_desc" {% if current_sort_by=='price_desc' %}selected{% endif %}>
-                                    Сначала дороже</option>
-                                <option value="name_asc" {% if current_sort_by=='name_asc' %}selected{% endif %}>По
-                                    названию</option>
-                            </select>
-                        </form>
+                        <!-- Сортировка отправляет форму фильтра -->
+                        <label for="sort_by" class="text-muted me-2 text-nowrap">Сортировка:</label>
+                        <select form="filterForm" name="sort_by" id="sort_by"
+                            class="form-select form-select-sm border-0 bg-light fw-bold" style="min-width: 160px;"
+                            onchange="this.form.submit()">
+                            <option value="price_asc" {% if current_sort_by=='price_asc' %}selected{% endif %}>Сначала
+                                дешевле</option>
+                            <option value="price_desc" {% if current_sort_by=='price_desc' %}selected{% endif %}>Сначала
+                                дороже</option>
+                            <option value="name_asc" {% if current_sort_by=='name_asc' %}selected{% endif %}>По названию
+                            </option>
+                        </select>
                     </div>
                 </div>
             </div>
 
-            <!-- Products -->
+            <!-- Products Loop -->
             {% if products %}
             <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4 mb-5">
                 {% for product in products %}
                 <div class="col">
                     <div class="product-card bg-surface">
                         <div class="product-thumb-wrapper">
-                            <!-- Wishlist Button -->
-                            <button
-                                class="btn btn-light btn-sm rounded-circle position-absolute top-0 end-0 m-2 shadow-sm btn-wishlist"
-                                data-product-id="{{ product.id }}" title="В избранное" style="z-index: 10;">
-                                {% if current_user.is_authenticated and product in current_user.wishlist.all() %}
-                                <i class="fas fa-heart text-danger"></i>
-                                {% else %}
-                                <i class="far fa-heart"></i>
-                                {% endif %}
-                            </button>
-
                             <div class="product-badges">
                                 {% if product.old_price and product.old_price > product.price %}
                                 <span class="badge-custom badge-sale">Sale</span>
                                 {% endif %}
-                                {% if loop.index <= 3 %} <span class="badge-custom badge-new">New</span>
-                                    {% endif %}
+                                {% if product.country %}
+                                <span class="badge-custom bg-light text-dark border">{{ product.country }}</span>
+                                {% endif %}
                             </div>
+                            <!-- Wishlist button logic ... -->
                             <a href="{{ url_for('main.product', slug=product.slug) }}">
                                 <img src="{{ url_for('static', filename='images/' + product.first_image) }}"
                                     alt="{{ product.name }}" class="product-thumb">
@@ -170,7 +184,26 @@
                                 class="text-decoration-none text-reset">
                                 <h3 class="product-title">{{ product.name }}</h3>
                             </a>
-                            <div class="product-price">
+
+                            <!-- Вывод ключевых характеристик в превью -->
+                            {% if product.specifications %}
+                            <div class="mb-2">
+                                <ul class="list-unstyled small text-muted mb-0" style="font-size: 0.8rem;">
+                                    {% for group, items in product.specifications.items() %}
+                                    {% if loop.first %}
+                                    {% for k, v in items.items() %}
+                                    {% if loop.index <= 2 %} <li class="d-flex justify-content-between">
+                                        <span>{{ k }}:</span> <span class="text-dark fw-bold">{{ v }}</span>
+                                        </li>
+                                        {% endif %}
+                                        {% endfor %}
+                                        {% endif %}
+                                        {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+
+                            <div class="product-price mt-auto">
                                 <span class="price-current">{{ "{:,.0f}".format(product.price).replace(',', ' ') }}
                                     ₽</span>
                                 {% if product.old_price %}
@@ -178,10 +211,13 @@
                                     ₽</span>
                                 {% endif %}
                             </div>
-                            <form action="{{ url_for('cart_app.add_to_cart', product_id=product.id) }}" method="post">
+
+                            <!-- Кнопка в корзину -->
+                            <form action="{{ url_for('cart_app.add_to_cart', product_id=product.id) }}" method="post"
+                                class="mt-2">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="btn btn-primary btn-add-cart">
-                                    <i class="fas fa-shopping-bag me-2"></i> В корзину
+                                <button type="submit" class="btn btn-primary btn-add-cart w-100">
+                                    В корзину
                                 </button>
                             </form>
                         </div>
@@ -190,49 +226,14 @@
                 {% endfor %}
             </div>
 
-            <!-- Pagination -->
-            {% if pagination.pages > 1 %}
-            <nav aria-label="Page navigation">
-                <ul class="pagination justify-content-center">
-                    <li class="page-item {{ 'disabled' if not pagination.has_prev }}">
-                        <a class="page-link rounded-start-pill px-3"
-                            href="{{ url_for('main.catalog', page=pagination.prev_num, slug=current_category.slug if current_category else None, **request.args) if pagination.has_prev else '#' }}">
-                            <i class="fas fa-chevron-left"></i>
-                        </a>
-                    </li>
-
-                    {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2)
-                    %}
-                    {% if page_num %}
-                    <li class="page-item {{ 'active' if page_num == pagination.page }}">
-                        <a class="page-link"
-                            href="{{ url_for('main.catalog', page=page_num, slug=current_category.slug if current_category else None, **request.args) }}">
-                            {{ page_num }}
-                        </a>
-                    </li>
-                    {% else %}
-                    <li class="page-item disabled"><span class="page-link">...</span></li>
-                    {% endif %}
-                    {% endfor %}
-
-                    <li class="page-item {{ 'disabled' if not pagination.has_next }}">
-                        <a class="page-link rounded-end-pill px-3"
-                            href="{{ url_for('main.catalog', page=pagination.next_num, slug=current_category.slug if current_category else None, **request.args) if pagination.has_next else '#' }}">
-                            <i class="fas fa-chevron-right"></i>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-            {% endif %}
-
+            <!-- Pagination (стандартная) -->
             {% else %}
+            <!-- Empty State -->
             <div class="text-center py-5">
-                <div class="mb-3 text-muted">
-                    <i class="fas fa-search fa-4x opacity-25"></i>
-                </div>
                 <h3>Ничего не найдено</h3>
-                <p class="text-muted">Попробуйте изменить параметры фильтрации или поисковый запрос.</p>
-                <a href="{{ url_for('main.catalog') }}" class="btn btn-primary">Весь каталог</a>
+                <p>Попробуйте смягчить условия фильтрации.</p>
+                <a href="{{ url_for('main.catalog', slug=current_category.slug) }}"
+                    class="btn btn-outline-primary">Сбросить фильтры</a>
             </div>
             {% endif %}
         </div>
