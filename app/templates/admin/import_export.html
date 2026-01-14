@@ -1,40 +1,167 @@
 {% extends 'admin/master.html' %}
 {% block body %}
-<h1>Импорт и Экспорт товаров</h1>
-<hr>
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Импорт и Экспорт товаров</h1>
+    </div>
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Экспорт товаров в CSV</h3>
+    <div class="row">
+        <div class="col-xl-6 col-lg-6 mb-4">
+            <div class="card shadow h-100 py-2">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Экспорт товаров в CSV</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="mb-3">
+                                Нажмите на кнопку ниже, чтобы скачать CSV-файл со всеми товарами из вашего каталога.
+                                Этот файл можно использовать как шаблон для импорта.
+                            </div>
+                            <a href="{{ url_for('.export') }}" class="btn btn-primary btn-icon-split">
+                                <span class="icon text-white-50">
+                                    <i class="fas fa-download"></i>
+                                </span>
+                                <span class="text">Экспортировать все товары</span>
+                            </a>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-file-export fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <p>Нажмите на кнопку ниже, чтобы скачать CSV-файл со всеми товарами из вашего каталога. Этот файл можно
-                    использовать как шаблон для импорта.</p>
-                <a href="{{ url_for('.export') }}" class="btn btn-primary">
-                    <i class="fa fa-download me-1"></i> Экспортировать все товары
-                </a>
+        </div>
+
+        <div class="col-xl-6 col-lg-6 mb-4">
+            <div class="card shadow h-100 py-2">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Импорт товаров из CSV</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="mb-3">
+                                Выберите CSV-файл для загрузки. Система обновит существующие товары (по `id`)
+                                или создаст новые, если `id` не указан или не найден.
+                            </div>
+                            <form action="{{ url_for('.import_csv') }}" method="post" enctype="multipart/form-data">
+                                <div class="mb-3">
+                                    <label for="file" class="form-label">CSV Файл</label>
+                                    <input type="file" name="file" id="file" class="form-control" accept=".csv" required>
+                                </div>
+                                <button type="submit" class="btn btn-success btn-icon-split">
+                                    <span class="icon text-white-50">
+                                        <i class="fas fa-upload"></i>
+                                    </span>
+                                    <span class="text">Загрузить и импортировать</span>
+                                </button>
+                            </form>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-file-import fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Импорт товаров из CSV</h3>
-            </div>
-            <div class="card-body">
-                <p>Выберите CSV-файл для загрузки. Система обновит существующие товары (по `id`) или создаст новые, если
-                    `id` не указан или не найден.</p>
-                <form action="{{ url_for('.import_csv') }}" method="post" enctype="multipart/form-data">
-                    <div class="form-group mb-3">
-                        <label for="file" class="form-label">CSV Файл</label>
-                        <input type="file" name="file" id="file" class="form-control" accept=".csv" required>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Формат CSV файла</h6>
+                </div>
+                <div class="card-body">
+                    <p>Для правильного импорта товаров, CSV файл должен содержать следующие колонки:</p>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Поле</th>
+                                    <th>Тип</th>
+                                    <th>Обязательно</th>
+                                    <th>Описание</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>id</td>
+                                    <td>Integer</td>
+                                    <td>Нет</td>
+                                    <td>Уникальный идентификатор товара. Если не указан, будет создан новый товар.</td>
+                                </tr>
+                                <tr>
+                                    <td>name</td>
+                                    <td>String</td>
+                                    <td>Да</td>
+                                    <td>Название товара</td>
+                                </tr>
+                                <tr>
+                                    <td>slug</td>
+                                    <td>String</td>
+                                    <td>Нет</td>
+                                    <td>URL-идентификатор товара (генерируется автоматически если не указан)</td>
+                                </tr>
+                                <tr>
+                                    <td>description</td>
+                                    <td>Text</td>
+                                    <td>Нет</td>
+                                    <td>Описание товара</td>
+                                </tr>
+                                <tr>
+                                    <td>price</td>
+                                    <td>Decimal</td>
+                                    <td>Да</td>
+                                    <td>Цена товара</td>
+                                </tr>
+                                <tr>
+                                    <td>old_price</td>
+                                    <td>Decimal</td>
+                                    <td>Нет</td>
+                                    <td>Старая цена (для отображения скидки)</td>
+                                </tr>
+                                <tr>
+                                    <td>sku</td>
+                                    <td>String</td>
+                                    <td>Нет</td>
+                                    <td>Артикул товара</td>
+                                </tr>
+                                <tr>
+                                    <td>in_stock</td>
+                                    <td>Integer</td>
+                                    <td>Да</td>
+                                    <td>Количество на складе</td>
+                                </tr>
+                                <tr>
+                                    <td>category_name</td>
+                                    <td>String</td>
+                                    <td>Нет</td>
+                                    <td>Название категории (будет создана если не существует)</td>
+                                </tr>
+                                <tr>
+                                    <td>brand_name</td>
+                                    <td>String</td>
+                                    <td>Нет</td>
+                                    <td>Название бренда (будет создан если не существует)</td>
+                                </tr>
+                                <tr>
+                                    <td>meta_title</td>
+                                    <td>String</td>
+                                    <td>Нет</td>
+                                    <td>SEO заголовок страницы</td>
+                                </tr>
+                                <tr>
+                                    <td>meta_description</td>
+                                    <td>Text</td>
+                                    <td>Нет</td>
+                                    <td>SEO описание страницы</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-                    <button type="submit" class="btn btn-success">
-                        <i class="fa fa-upload me-1"></i> Загрузить и импортировать
-                    </button>
-                </form>
+                </div>
             </div>
         </div>
     </div>

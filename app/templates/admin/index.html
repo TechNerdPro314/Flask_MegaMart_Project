@@ -11,7 +11,7 @@
     <!-- Карточки статистики -->
     <div class="row">
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card border-left-primary shadow h-100 py-2 stat-card">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
@@ -27,7 +27,7 @@
         </div>
 
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
+            <div class="card border-left-success shadow h-100 py-2 stat-card">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
@@ -43,7 +43,7 @@
         </div>
 
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
+            <div class="card border-left-info shadow h-100 py-2 stat-card">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
@@ -59,7 +59,7 @@
         </div>
 
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card border-left-warning shadow h-100 py-2 stat-card">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
@@ -78,10 +78,22 @@
     <!-- График и таблицы -->
     <div class="row">
         <!-- График заказов -->
-        <div class="col-lg-6 mb-4">
+        <div class="col-lg-8 mb-4">
             <div class="card shadow mb-4">
-                <div class="card-header py-3">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                     <h6 class="m-0 font-weight-bold text-primary">Заказы за последние 7 дней</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                            <div class="dropdown-header">Настройки графика:</div>
+                            <a class="dropdown-item" href="#">За неделю</a>
+                            <a class="dropdown-item" href="#">За месяц</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#">Экспорт данных</a>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="chart-container" style="position: relative; height:300px;">
@@ -91,11 +103,37 @@
             </div>
         </div>
 
+        <!-- Статистика по статусам заказов -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Статусы заказов</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="position: relative; height:300px;">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
         <!-- Последние заказы -->
         <div class="col-lg-6 mb-4">
             <div class="card shadow mb-4">
-                <div class="card-header py-3">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                     <h6 class="m-0 font-weight-bold text-primary">Последние заказы</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink2">
+                            <div class="dropdown-header">Действия:</div>
+                            <a class="dropdown-item" href="{{ url_for('admin.index') }}order/">Все заказы</a>
+                            <a class="dropdown-item" href="#">Экспорт</a>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -117,13 +155,13 @@
                                     <td>{{ "%.2f"|format(order.total_amount) }} ₽</td>
                                     <td>
                                         {% if order.status == 'Paid' %}
-                                            <span class="badge badge-success">Оплачен</span>
+                                            <span class="badge bg-success">Оплачен</span>
                                         {% elif order.status == 'Pending' %}
-                                            <span class="badge badge-warning">В ожидании</span>
+                                            <span class="badge bg-warning text-dark">В ожидании</span>
                                         {% elif order.status == 'Failed' %}
-                                            <span class="badge badge-danger">Ошибка</span>
+                                            <span class="badge bg-danger">Ошибка</span>
                                         {% else %}
-                                            <span class="badge badge-secondary">{{ order.status }}</span>
+                                            <span class="badge bg-secondary">{{ order.status }}</span>
                                         {% endif %}
                                     </td>
                                     <td>{{ order.created_at.strftime('%d.%m.%Y') }}</td>
@@ -135,14 +173,22 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Топ товаров -->
-    <div class="row">
-        <div class="col-lg-12 mb-4">
+        <!-- Топ товаров -->
+        <div class="col-lg-6 mb-4">
             <div class="card shadow mb-4">
-                <div class="card-header py-3">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                     <h6 class="m-0 font-weight-bold text-primary">Топ-5 продаваемых товаров</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink3" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink3">
+                            <div class="dropdown-header">Действия:</div>
+                            <a class="dropdown-item" href="{{ url_for('admin.index') }}product/">Все товары</a>
+                            <a class="dropdown-item" href="#">Экспорт</a>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -151,17 +197,50 @@
                                 <tr>
                                     <th>Товар</th>
                                     <th>Продано (шт)</th>
+                                    <th>Доход</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for product in popular_products %}
                                 <tr>
                                     <td>{{ product.name }}</td>
-                                    <td><span class="badge badge-info">{{ product.total_sold }}</span></td>
+                                    <td><span class="badge bg-info">{{ product.total_sold }}</span></td>
+                                    <td>{{ "%.2f"|format(product.total_sold * product.price) }} ₽</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Дополнительные графики -->
+    <div class="row">
+        <!-- График доходов -->
+        <div class="col-xl-8 col-lg-7 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Ежемесячный доход</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="position: relative; height:300px;">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Категории товаров -->
+        <div class="col-xl-4 col-lg-5 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Распределение по категориям</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="position: relative; height:300px;">
+                        <canvas id="categoryChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -172,8 +251,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 // График заказов
-const ctx = document.getElementById('ordersChart').getContext('2d');
-const ordersChart = new Chart(ctx, {
+const ordersCtx = document.getElementById('ordersChart').getContext('2d');
+const ordersChart = new Chart(ordersCtx, {
     type: 'line',
     data: {
         labels: {{ days|tojson }},
@@ -182,7 +261,8 @@ const ordersChart = new Chart(ctx, {
             data: {{ order_counts|tojson }},
             borderColor: 'rgb(255, 107, 0)',
             backgroundColor: 'rgba(255, 107, 0, 0.2)',
-            tension: 0.1
+            tension: 0.1,
+            fill: true
         }]
     },
     options: {
@@ -191,6 +271,103 @@ const ordersChart = new Chart(ctx, {
         scales: {
             y: {
                 beginAtZero: true
+            }
+        }
+    }
+});
+
+// График статусов заказов
+const statusCtx = document.getElementById('statusChart').getContext('2d');
+const statusChart = new Chart(statusCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Оплачено', 'В ожидании', 'Ошибка'],
+        datasets: [{
+            data: [
+                {{ latest_orders|selectattr('status', 'equalto', 'Paid')|list|length }},
+                {{ latest_orders|selectattr('status', 'equalto', 'Pending')|list|length }},
+                {{ latest_orders|selectattr('status', 'equalto', 'Failed')|list|length }}
+            ],
+            backgroundColor: [
+                'rgba(40, 167, 69, 0.7)',  // Green for Paid
+                'rgba(255, 193, 7, 0.7)',   // Yellow for Pending
+                'rgba(220, 53, 69, 0.7)'    // Red for Failed
+            ],
+            borderColor: [
+                'rgba(40, 167, 69, 1)',
+                'rgba(255, 193, 7, 1)',
+                'rgba(220, 53, 69, 1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// График доходов (фиктивные данные для примера)
+const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+const revenueChart = new Chart(revenueCtx, {
+    type: 'bar',
+    data: {
+        labels: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'],
+        datasets: [{
+            label: 'Доход (₽)',
+            data: [12000, 19000, 15000, 18000, 22000, 25000, 21000, 24000, 28000, 26000, 30000, 35000],
+            backgroundColor: 'rgba(15, 76, 129, 0.7)',
+            borderColor: 'rgba(15, 76, 129, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// График категорий (фиктивные данные для примера)
+const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+const categoryChart = new Chart(categoryCtx, {
+    type: 'pie',
+    data: {
+        labels: ['Сантехника', 'Кухня', 'Душевые кабины', 'Ванны', 'Смесители'],
+        datasets: [{
+            data: [35, 25, 15, 15, 10],
+            backgroundColor: [
+                'rgba(15, 76, 129, 0.7)',    // Primary
+                'rgba(100, 116, 139, 0.7)',  // Secondary
+                'rgba(245, 158, 11, 0.7)',   // Accent
+                'rgba(16, 185, 129, 0.7)',   // Success
+                'rgba(239, 68, 68, 0.7)'     // Danger
+            ],
+            borderColor: [
+                'rgba(15, 76, 129, 1)',
+                'rgba(100, 116, 139, 1)',
+                'rgba(245, 158, 11, 1)',
+                'rgba(16, 185, 129, 1)',
+                'rgba(239, 68, 68, 1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
             }
         }
     }

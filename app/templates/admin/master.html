@@ -5,13 +5,25 @@
   <!-- Подключение кастомных стилей -->
   <link rel="stylesheet" href="{{ url_for('admin.static', filename='css/admin.css') }}">
   <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+  <!-- Animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Шрифт Manrope -->
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Стили мобильной адаптации и анимаций теперь находятся в admin.css -->
 {% endblock %}
 
 {% block tail_js %}
   {{ super() }}
+  <!-- Bootstrap 5 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
   <!-- Подключение кастомных скриптов -->
   <script src="{{ url_for('admin.static', filename='js/admin.js') }}"></script>
 
@@ -58,7 +70,7 @@
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
-            entry.target.classList.add('admin-animate');
+            entry.target.classList.add('animate__animated', 'animate__fadeInUp');
             observer.unobserve(entry.target);
           }
         });
@@ -66,8 +78,8 @@
 
       // Применяем к элементам админ панели
       document.querySelectorAll('.card, .table, .form-control, .btn').forEach(el => {
-        if (!el.classList.contains('admin-animate')) {
-          el.classList.add('admin-animate');
+        if (!el.classList.contains('animate__animated')) {
+          el.classList.add('animate__animated', 'animate__fadeIn');
           observer.observe(el);
         }
       });
@@ -125,6 +137,12 @@
           $('.modal-content').addClass('animate__animated animate__fadeInUp');
         });
       }
+
+      // Инициализация тултипов Bootstrap 5
+      const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+      tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+      });
     });
 
     // Добавляем обработчик для бургер-меню на мобильных устройствах
@@ -145,15 +163,122 @@
 {% endblock %}
 
 {% block brand %}
-  <span class="sidebar-brand">
-    <i class="fas fa-store"></i> MegaMart Admin
-  </span>
+  <div class="sidebar-brand d-flex align-items-center justify-content-center">
+    <div class="sidebar-brand-icon">
+      <i class="fas fa-store"></i>
+    </div>
+    <div class="sidebar-brand-text mx-3">MegaMart Admin</div>
+  </div>
 {% endblock %}
 
 {% block page_header %}
   {% if title %}
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom admin-animate">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
       <h1 class="h2">{{ title }}</h1>
+      <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Share">
+            <i class="fas fa-share-alt"></i>
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Export">
+            <i class="fas fa-download"></i>
+          </button>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
+          <i class="fas fa-calendar"></i>
+          This week
+        </button>
+        <ul class="dropdown-menu dropdown-menu-lg-end">
+          <li><a class="dropdown-item" href="#">Today</a></li>
+          <li><a class="dropdown-item" href="#">This week</a></li>
+          <li><a class="dropdown-item" href="#">This month</a></li>
+          <li><a class="dropdown-item" href="#">This year</a></li>
+        </ul>
+      </div>
     </div>
   {% endif %}
+{% endblock %}
+
+{% block body %}
+<div class="d-flex" id="wrapper">
+  <!-- Sidebar -->
+  <div class="border-end bg-white" id="sidebar-wrapper">
+    <div class="sidebar-brand d-flex align-items-center justify-content-center p-3">
+      <div class="sidebar-brand-icon">
+        <i class="fas fa-store"></i>
+      </div>
+      <div class="sidebar-brand-text mx-3">MegaMart Admin</div>
+    </div>
+    <div class="list-group list-group-flush">
+      <a class="list-group-item list-group-item-action list-group-item-light p-3" href="{{ url_for('admin.index') }}">Dashboard</a>
+      <a class="list-group-item list-group-item-action list-group-item-light p-3" href="#!">Products</a>
+      <a class="list-group-item list-group-item-action list-group-item-light p-3" href="#!">Orders</a>
+      <a class="list-group-item list-group-item-action list-group-item-light p-3" href="#!">Customers</a>
+      <a class="list-group-item list-group-item-action list-group-item-light p-3" href="#!">Reports</a>
+      <a class="list-group-item list-group-item-action list-group-item-light p-3" href="#!">Settings</a>
+    </div>
+  </div>
+  <!-- Page content wrapper-->
+  <div id="page-content-wrapper">
+    <!-- Top navigation-->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+      <div class="container-fluid">
+        <button class="btn btn-primary" id="sidebarToggle">Menu</button>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav ms-auto mt-2 mt-lg-0">
+            <li class="nav-item active"><a class="nav-link" href="#!">Home</a></li>
+            <li class="nav-item"><a class="nav-link" href="#!">Link</a></li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dropdown</a>
+              <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                <a class="dropdown-item" href="#!">Action</a>
+                <a class="dropdown-item" href="#!">Another action</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="#!">Something else here</a>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <!-- Page content-->
+    <div class="container-fluid">
+      {% block body_inner %}
+        {{ super() }}
+      {% endblock %}
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap core JS-->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Core theme JS-->
+<script>
+// Activate Bootstrap scrollspy for the sticky nav component
+const navbarCollapsible = document.body.querySelector('#navbarSupportedContent');
+if (navbarCollapsible) {
+  // Set the navbarSupportedContent height to the documentElement.scrollHeight
+  navbarCollapsible.addEventListener('shown.bs.collapse', () => {
+    navbarCollapsible.style.maxHeight = document.documentElement.scrollHeight + 'px';
+  });
+  navbarCollapsible.addEventListener('hidden.bs.collapse', () => {
+    navbarCollapsible.style.maxHeight = '0';
+  });
+}
+
+// Toggle the side navigation
+const sidebarToggle = document.body.querySelector('#sidebarToggle');
+if (sidebarToggle) {
+  // Persist the sidebar toggle between refreshes
+  if (localStorage.getItem('sb|sidebar-toggle') === 'true') {
+    document.body.classList.toggle('sb-sidenav-toggled');
+  }
+  sidebarToggle.addEventListener('click', event => {
+    event.preventDefault();
+    document.body.classList.toggle('sb-sidenav-toggled');
+    localStorage.setItem('sb|sidebar-toggle', document.body.classList.contains('sb-sidenav-toggled'));
+  });
+}
+</script>
 {% endblock %}
