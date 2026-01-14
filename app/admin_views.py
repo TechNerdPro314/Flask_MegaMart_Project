@@ -4,6 +4,7 @@ from app.models import Order, Product, User, OrderItem, db, Category, Brand
 from flask import flash, redirect, url_for, Response, request
 from datetime import datetime, timedelta
 from sqlalchemy import func
+from sqlalchemy.orm import joinedload
 import csv
 import io
 
@@ -85,7 +86,10 @@ class ImportExportView(BaseView):
             "meta_description",
         ]
         writer.writerow(headers)
-        products = Product.query.all()
+        products = Product.query.options(
+            joinedload(Product.category),
+            joinedload(Product.brand)
+        ).all()
         for product in products:
             row = [
                 product.id,

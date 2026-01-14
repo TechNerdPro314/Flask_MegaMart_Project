@@ -9,7 +9,12 @@
     <nav aria-label="breadcrumb" class="my-4">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Главная</a></li>
+            {% if current_category %}
+            <li class="breadcrumb-item"><a href="{{ url_for('main.catalog') }}">Каталог</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ current_category.name }}</li>
+            {% else %}
             <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
+            {% endif %}
         </ol>
     </nav>
 
@@ -37,7 +42,7 @@
                         <div class="custom-scrollbar pe-2">
                             {% for category in all_categories %}
                             {% if not category.parent_id %}
-                            <a href="{{ url_for('main.catalog', slug=category.slug) }}" class="category-link">
+                            <a href="{{ url_for('main.catalog', slug=category.slug) }}" class="category-link {{ 'active' if request.args.get('slug') == category.slug else '' }}">
                                 {{ category.name }}
                             </a>
                             {% endif %}
@@ -123,8 +128,8 @@
                     {% endif %}
 
                     <div class="sticky-bottom bg-surface pt-3 mt-3 border-top">
-                        <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm">
-                            Показать товары
+                        <button type="submit" class="btn btn-primary btn-show-products">
+                            <i class="fas fa-filter me-2"></i>Применить фильтры
                         </button>
                     </div>
                 </form>
@@ -134,24 +139,29 @@
         <!-- Product Grid (правая колонка без изменений) -->
         <div class="col-lg-9">
             <!-- Toolbar -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div
-                    class="card-body p-3 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-                    <h1 class="h4 m-0 fw-bold">{{ title }}</h1>
-                    <span class="text-muted small">{{ products|length }} товаров</span>
+            <div class="catalog-toolbar mb-4">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                    <div>
+                        <h1 class="h4 m-0 fw-bold">{{ title }}</h1>
+                        <p class="search-results-count mb-0">
+                            Найдено: <strong>{{ products|length }} {{ products|length|pluralize('товар', 'товара', 'товаров') }}</strong>
+                            {% if request.args %}
+                            <span class="text-muted">по запросу</span>
+                            {% endif %}
+                        </p>
+                    </div>
 
-                    <div class="d-flex align-items-center gap-3 w-100 w-md-auto">
+                    <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2 w-100 w-md-auto">
                         <!-- Сортировка отправляет форму фильтра -->
-                        <label for="sort_by" class="text-muted me-2 text-nowrap">Сортировка:</label>
+                        <label for="sort_by" class="text-muted mb-0 me-2">Сортировка:</label>
                         <select form="filterForm" name="sort_by" id="sort_by"
-                            class="form-select form-select-sm border-0 bg-light fw-bold" style="min-width: 160px;"
+                            class="form-select sort-select"
                             onchange="this.form.submit()">
-                            <option value="price_asc" {% if current_sort_by=='price_asc' %}selected{% endif %}>Сначала
-                                дешевле</option>
-                            <option value="price_desc" {% if current_sort_by=='price_desc' %}selected{% endif %}>Сначала
-                                дороже</option>
-                            <option value="name_asc" {% if current_sort_by=='name_asc' %}selected{% endif %}>По названию
-                            </option>
+                            <option value="price_asc" {% if current_sort_by=='price_asc' %}selected{% endif %}>Сначала дешевле</option>
+                            <option value="price_desc" {% if current_sort_by=='price_desc' %}selected{% endif %}>Сначала дороже</option>
+                            <option value="name_asc" {% if current_sort_by=='name_asc' %}selected{% endif %}>По названию А-Я</option>
+                            <option value="name_desc" {% if current_sort_by=='name_desc' %}selected{% endif %}>По названию Я-А</option>
+                            <option value="rating" {% if current_sort_by=='rating' %}selected{% endif %}>По рейтингу</option>
                         </select>
                     </div>
                 </div>
@@ -162,24 +172,38 @@
             <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4 mb-5">
                 {% for product in products %}
                 <div class="col">
-                    <div class="product-card bg-surface">
+                    <div class="product-card h-100">
                         <div class="product-thumb-wrapper">
                             <div class="product-badges">
                                 {% if product.old_price and product.old_price > product.price %}
-                                <span class="badge-custom badge-sale">Sale</span>
+                                <span class="badge-custom badge-sale">-{{ ((product.old_price - product.price) / product.old_price * 100)|int }}%</span>
                                 {% endif %}
                                 {% if product.country %}
                                 <span class="badge-custom bg-light text-dark border">{{ product.country }}</span>
                                 {% endif %}
                             </div>
-                            <!-- Wishlist button logic ... -->
+
+                            <!-- Wishlist button logic -->
                             <a href="{{ url_for('main.product', slug=product.slug) }}">
                                 <img src="{{ url_for('static', filename='images/' + product.first_image) }}"
                                     alt="{{ product.name }}" class="product-thumb">
                             </a>
+
+                            <!-- Wishlist button on card -->
+                            {% if current_user.is_authenticated %}
+                            <button class="btn btn-sm btn-light position-absolute top-0 end-0 m-2 btn-wishlist"
+                                data-product-id="{{ product.id }}"
+                                style="z-index: 3;">
+                                {% if product in current_user.wishlist.all() %}
+                                <i class="fas fa-heart text-danger"></i>
+                                {% else %}
+                                <i class="far fa-heart"></i>
+                                {% endif %}
+                            </button>
+                            {% endif %}
                         </div>
                         <div class="product-body">
-                            <div class="product-category">{{ product.category.name }}</div>
+                            <div class="product-category small text-muted">{{ product.category.name }}</div>
                             <a href="{{ url_for('main.product', slug=product.slug) }}"
                                 class="text-decoration-none text-reset">
                                 <h3 class="product-title">{{ product.name }}</h3>
@@ -212,14 +236,20 @@
                                 {% endif %}
                             </div>
 
-                            <!-- Кнопка в корзину -->
-                            <form action="{{ url_for('cart_app.add_to_cart', product_id=product.id) }}" method="post"
-                                class="mt-2">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="btn btn-primary btn-add-cart w-100">
-                                    В корзину
-                                </button>
-                            </form>
+                            <!-- Кнопки действий -->
+                            <div class="d-grid gap-2 mt-2">
+                                <form action="{{ url_for('cart_app.add_to_cart', product_id=product.id) }}" method="post"
+                                    class="mb-2">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-primary btn-add-cart w-100">
+                                        <i class="fas fa-shopping-cart me-2"></i>В корзину
+                                    </button>
+                                </form>
+
+                                <a href="{{ url_for('main.product', slug=product.slug) }}" class="btn btn-outline-primary w-100">
+                                    <i class="fas fa-eye me-2"></i>Подробнее
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -229,11 +259,16 @@
             <!-- Pagination (стандартная) -->
             {% else %}
             <!-- Empty State -->
-            <div class="text-center py-5">
-                <h3>Ничего не найдено</h3>
-                <p>Попробуйте смягчить условия фильтрации.</p>
-                <a href="{{ url_for('main.catalog', slug=current_category.slug) }}"
-                    class="btn btn-outline-primary">Сбросить фильтры</a>
+            <div class="empty-state">
+                <div class="mb-4">
+                    <i class="fas fa-search fa-3x text-muted"></i>
+                </div>
+                <h3 class="text-muted">Товары не найдены</h3>
+                <p class="text-muted">По вашему запросу ничего не удалось найти</p>
+                <a href="{{ url_for('main.catalog', slug=current_category.slug if current_category else '') }}"
+                    class="btn btn-primary px-4">
+                    <i class="fas fa-sync-alt me-2"></i>Сбросить фильтры
+                </a>
             </div>
             {% endif %}
         </div>

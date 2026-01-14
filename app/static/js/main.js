@@ -3,28 +3,13 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- 1. Theme Toggling Logic ---
-    const themeToggleBtn = document.getElementById('theme-toggle');
     const htmlElement = document.documentElement;
-    const icon = themeToggleBtn ? themeToggleBtn.querySelector('i') : null;
 
-    // Check local storage or system preference
-    const savedTheme = localStorage.getItem('theme');
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    // Store reference to theme toggle button and icon
+    let themeToggleBtn = null;
+    let themeIcon = null;
 
-    let currentTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
-    applyTheme(currentTheme, false); // Apply without animation on load
-
-    if (themeToggleBtn) {
-        themeToggleBtn.addEventListener('click', () => {
-            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
-            applyTheme(currentTheme, true); // Apply with animation on click
-            localStorage.setItem('theme', currentTheme);
-
-            // Add ripple effect
-            createRipple(themeToggleBtn);
-        });
-    }
-
+    // Define applyTheme function first
     function applyTheme(theme, animate = true) {
         // Add transition class for smooth theme change
         if (animate) {
@@ -33,25 +18,66 @@ document.addEventListener('DOMContentLoaded', () => {
 
         htmlElement.setAttribute('data-bs-theme', theme);
 
-        if (icon) {
-            if (theme === 'dark') {
-                icon.classList.remove('fa-moon');
-                icon.classList.add('fa-sun');
-            } else {
-                icon.classList.remove('fa-sun');
-                icon.classList.add('fa-moon');
-            }
-        }
-
-        // Remove transition after animation completes
-        if (animate) {
-            setTimeout(() => {
-                htmlElement.style.transition = '';
-            }, 300);
+        // Update icon if available
+        if (themeIcon) {
+            updateThemeIcon(themeIcon, theme);
         }
 
         // Optional: Dispatch custom event for other scripts to react
         window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme } }));
+    }
+
+    // Check local storage or system preference
+    const savedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    let currentTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+
+    // Apply initial theme
+    applyTheme(currentTheme, false); // Apply without animation on load
+
+    // Wait for DOM to be fully loaded and then attach event listener
+    function initializeThemeToggle() {
+        themeToggleBtn = document.getElementById('theme-toggle');
+        if (themeToggleBtn) {
+            themeIcon = themeToggleBtn.querySelector('i');
+
+            themeToggleBtn.addEventListener('click', () => {
+                currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+                applyTheme(currentTheme, true); // Apply with animation on click
+                localStorage.setItem('theme', currentTheme);
+
+                // Add ripple effect
+                createRipple(themeToggleBtn);
+            });
+
+            // Update icon based on current theme
+            updateThemeIcon(themeIcon, currentTheme);
+        } else {
+            console.warn('Theme toggle button not found in DOM');
+        }
+    }
+
+    // Update theme icon based on current theme
+    function updateThemeIcon(icon, theme) {
+        if (!icon) return;
+
+        // Clear all theme-related classes first
+        icon.classList.remove('fa-moon', 'fa-sun');
+
+        if (theme === 'dark') {
+            icon.classList.add('fa-sun');
+        } else {
+            icon.classList.add('fa-moon');
+        }
+    }
+
+    // Initialize theme toggle after ensuring DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeThemeToggle);
+    } else {
+        // DOM is already loaded
+        initializeThemeToggle();
     }
 
     // Create ripple effect on theme toggle

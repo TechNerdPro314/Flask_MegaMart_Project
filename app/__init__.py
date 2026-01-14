@@ -24,6 +24,8 @@ from config import config
 from logging.handlers import SMTPHandler, RotatingFileHandler
 from celery import Celery
 from slugify import slugify
+# Configure rate limiting with Redis storage
+from limits.storage.redis import RedisStorage
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -67,7 +69,20 @@ def create_app(config_name="default"):
         )
     
     # <--- 2. ДОБАВИТЬ ЭТУ СТРОКУ (Регистрация фильтра)
-    app.jinja_env.filters['slugify'] = slugify 
+    app.jinja_env.filters['slugify'] = slugify
+
+    # Функция для склонения числительных (товар, товара, товаров)
+    def pluralize(value, singular, plural_genitive, plural):
+        """Выбирает нужную форму слова в зависимости от числа"""
+        value = int(value)
+        if value % 10 == 1 and value % 100 != 11:
+            return singular
+        elif 2 <= value % 10 <= 4 and (value % 100 < 10 or value % 100 >= 20):
+            return plural_genitive
+        else:
+            return plural
+
+    app.jinja_env.filters['pluralize'] = pluralize
 
     # Health check endpoint
     @app.route("/health")
@@ -106,8 +121,6 @@ def create_app(config_name="default"):
     migrate.init_app(app, db)
     csrf.init_app(app)
     
-    # Configure rate limiting with Redis storage
-    from flask_limiter import Redis
     try:
         redis_client = Redis.from_url(app.config["CACHE_REDIS_URL"])
         limiter.storage_uri = app.config["CACHE_REDIS_URL"]
@@ -118,12 +131,32 @@ def create_app(config_name="default"):
     assets.init_app(app)
     mail.init_app(app)
     celery.conf.update(app.config)
-    css_bundle = Bundle("css/style.css", filters="cssmin", output="gen/packed.css")
-    js_bundle = Bundle(
-        "js/main.js", "js/cart.js", filters="jsmin", output="gen/packed.js"
+
+    # Настройка ассетов с явным указанием параметров
+    css_bundle = Bundle(
+        "css/style.css",
+        filters="cssmin",
+        output="gen/packed.css"
     )
+
+    # Критичный JS (например, для корзины и уведомлений)
+    critical_js_bundle = Bundle(
+        "js/main.js",
+        "js/cart.js",
+        filters="jsmin",
+        output="gen/critical.js"
+    )
+
+    # Второстепенный JS (например, service worker, аналитика)
+    non_critical_js_bundle = Bundle(
+        "js/sw.js",
+        filters="jsmin",
+        output="gen/non-critical.js"
+    )
+
     assets.register("css_all", css_bundle)
-    assets.register("js_all", js_bundle)
+    assets.register("js_all", critical_js_bundle)  # Регистрируем как js_all вместо critical_js
+    assets.register("non_critical_js", non_critical_js_bundle)
 
     # ... (далее код без изменений) ...
     if not app.debug and not app.testing:

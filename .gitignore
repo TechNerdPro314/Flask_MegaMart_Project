@@ -184,3 +184,150 @@ docker_logs/
 # ==========================================
 Dockerfile.backup
 *.dockerfile
+
+# ==========================================
+# Production и deployment
+# ==========================================
+# Файлы, связанные с production-окружением
+*.prod.conf
+*.production.conf
+production_settings.py
+gunicorn.conf.py
+supervisor.conf
+
+# ==========================================
+# Node.js (если используется)
+# ==========================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ==========================================
+# Assets (для сборки)
+# ==========================================
+*.css.map
+*.js.map
+.sass-cache/
+
+# ==========================================
+# OS Generated Files
+# ==========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ==========================================
+# IDE Specific
+# ==========================================
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# ==========================================
+# Security and Secrets
+# ==========================================
+# Файлы с ключами и сертификатами
+*.pem
+*.key
+*.crt
+*.cert
+*.secret
+secrets.json
+keys.json
+
+# ==========================================
+# Local Development
+# ==========================================
+# Файлы, которые должны быть уникальными для каждой установки
+local_settings.py
+config_local.py
+settings_local.py
+.envrc
+.env.local
+.env.production
+.env.staging
+.env.test
+*.local
+*.env
+
+# ==========================================
+# Media and Uploads
+# ==========================================
+# Папка с загруженными файлами пользователей
+uploads/
+media/
+files/
+user_uploads/
+images/uploads/
+documents/
+
+# ==========================================
+# Analytics and Tracking
+# ==========================================
+*.csv
+*.xlsx
+*.xls
+analytics.json
+tracking.json
+
+# ==========================================
+# Documentation
+# ==========================================
+*.pdf
+*.doc
+*.docx
+*.odt
+*.rtf
+*.md~  # Временные файлы редактирования markdown
+
+# ==========================================
+# Logs (еще раз для уверенности)
+# ==========================================
+*.log
+logs/
+log/
+*.out
+*.pid
+
+# ==========================================
+# Cache and Temp
+# ==========================================
+.cache/
+*.tmp
+*.temp
+tmp/
+temp/
+.cache
+*.cache
+*.pyc
+*.pyo
+*.pyd
+*.py.class
+*.pyc.class
+*.pyo.class

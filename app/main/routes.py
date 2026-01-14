@@ -15,7 +15,7 @@ from flask_login import current_user, login_required
 from app import db, cache
 from app.models import Product, Category, Brand, ProductImage, Review, Order, User
 from app.forms import ReviewForm
-from app.utils import get_category_filters, filter_products_by_specs
+from app.utils import get_category_filters, filter_products_by_specs, get_cached_categories, get_cached_brands
 from datetime import datetime
 from . import main_bp
 from sqlalchemy.orm import joinedload, selectinload
@@ -41,7 +41,7 @@ def add_first_image_to_products(products):
 @main_bp.route("/")
 @main_bp.route("/index")
 def index():
-    categories = Category.query.order_by(Category.name).limit(6).all()
+    categories = get_cached_categories()[:6]  # Берем первые 6 категорий
     featured_products_query = Product.query.options(
         joinedload(Product.category),
         joinedload(Product.brand),
@@ -64,7 +64,7 @@ def index():
 def catalog(slug=None):
     page = request.args.get("page", 1, type=int)
     per_page = 24
-    
+
     # Базовый запрос
     query = Product.query.options(
         joinedload(Product.category),
@@ -78,7 +78,7 @@ def catalog(slug=None):
     if slug:
         current_category = Category.query.filter_by(slug=slug).first_or_404()
         query = query.filter(Product.category_id == current_category.id)
-        
+
         # 1. Генерируем фильтры для этой категории
         dynamic_filters = get_category_filters(current_category.id)
 
@@ -115,12 +115,12 @@ def catalog(slug=None):
     products = pagination.items
     products = add_first_image_to_products(products)
 
-    all_categories = Category.query.all()
-    all_brands = Brand.query.all()
+    all_categories = get_cached_categories()
+    all_brands = get_cached_brands()
 
     # Meta
     title = current_category.name if current_category else "Каталог"
-    
+
     return render_template(
         "catalog.html",
         title=title,
@@ -359,7 +359,7 @@ def sitemap():
         },
     ]
     pages.extend(static_routes)
-    categories = Category.query.all()
+    categories = get_cached_categories()
     for category in categories:
         pages.append(
             {
@@ -368,6 +368,7 @@ def sitemap():
                 "changefreq": "weekly",
             }
         )
+    # Для продуктов пока оставим без кэширования, так как их может быть много
     products = Product.query.all()
     for product in products:
         pages.append(

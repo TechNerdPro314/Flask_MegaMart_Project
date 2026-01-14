@@ -3,145 +3,160 @@
 {% block title %}О нас{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-
-    <!-- 1. Header Section -->
-    <div class="text-center mb-5 animate__animated animate__fadeIn">
-        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2 mb-3">
-            История успеха
-        </span>
-        <h1 class="display-4 fw-bold mb-3">Мы создаем комфорт <br><span class="text-gradient">в каждом доме</span></h1>
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <p class="lead text-muted">
-                    MegaMart — это не просто интернет-магазин сантехники. Это команда экспертов,
-                    которая помогает вам воплощать смелые дизайнерские идеи и создавать ванную комнату,
-                    о которой вы мечтали.
-                </p>
+<div class="container-fluid px-0">
+    <!-- 1. Hero Section -->
+    <section class="about-hero">
+        <div class="container">
+            <div class="about-hero-content text-center">
+                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-4 py-2 mb-4">
+                    <i class="fas fa-star me-2"></i>История успеха
+                </span>
+                <h1 class="display-4 fw-bold mb-4">Мы создаем комфорт <br><span class="text-gradient">в каждом доме</span></h1>
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <p class="lead text-muted">
+                            MegaMart — это не просто интернет-магазин сантехники. Это команда экспертов,
+                            которая помогает вам воплощать смелые дизайнерские идеи и создавать ванную комнату,
+                            о которой вы мечтали.
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
+    </section>
 
     <!-- 2. Main Story + Image -->
-    <div class="row align-items-center g-5 mb-5">
-        <div class="col-lg-6 animate__animated animate__fadeInLeft">
-            <div class="position-relative">
-                <!-- Placeholder for office/showroom image -->
-                <img src="{{ url_for('static', filename='images/default_product.png') }}" alt="Наш офис"
-                    class="img-fluid rounded-4 shadow-lg w-100 object-fit-cover" style="min-height: 400px;">
+    <section class="container py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <div class="position-relative">
+                    <!-- Placeholder for office/showroom image -->
+                    <img src="{{ url_for('static', filename='images/default_product.png') }}" alt="Наш офис"
+                        class="img-fluid rounded-4 shadow-lg w-100 object-fit-cover" style="min-height: 400px;">
 
-                <!-- Floating Badge -->
-                <div class="position-absolute bottom-0 start-0 bg-white p-4 rounded-top-4 rounded-end-4 shadow-lg m-4 d-none d-md-block"
-                    style="max-width: 250px;">
-                    <div class="d-flex align-items-center mb-2">
-                        <i class="fas fa-users text-primary fa-2x me-3"></i>
-                        <h5 class="fw-bold mb-0">50+</h5>
+                    <!-- Floating Badge -->
+                    <div class="position-absolute bottom-0 start-0 bg-surface p-4 rounded-top-4 rounded-end-4 shadow-lg m-4 d-none d-md-block border"
+                        style="max-width: 250px;">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-users text-primary fa-2x me-3"></i>
+                            <h5 class="fw-bold mb-0">50+</h5>
+                        </div>
+                        <p class="text-muted small mb-0">Профессионалов в штате готовы помочь вам с выбором</p>
                     </div>
-                    <p class="text-muted small mb-0">Профессионалов в штате готовы помочь вам с выбором</p>
                 </div>
             </div>
-        </div>
 
-        <div class="col-lg-6 animate__animated animate__fadeInRight">
-            <h2 class="fw-bold mb-4">От небольшого шоурума до лидера рынка</h2>
-            <p class="text-muted mb-4">
-                Компания MegaMart была основана в 2010 году. Мы начинали как локальный магазин с узким ассортиментом,
-                но с большой мечтой — сделать качественную европейскую сантехнику доступной для каждого жителя России.
-            </p>
-            <p class="text-muted mb-4">
-                Сегодня мы сотрудничаем напрямую с такими гигантами, как Grohe, Roca, Geberit и многими другими.
-                Это позволяет нам гарантировать подлинность каждого товара и предлагать лучшие цены на рынке.
-            </p>
-
-            <!-- Mission Quote -->
-            <div class="p-4 bg-surface border rounded-3 border-start border-4 border-primary shadow-sm">
-                <h5 class="fw-bold mb-2 text-primary">Наша миссия</h5>
-                <p class="fst-italic mb-0 text-muted">
-                    "Сделать процесс ремонта ванной комнаты простым, понятным и вдохновляющим,
-                    предоставляя лучший сервис и экспертную поддержку на каждом этапе."
+            <div class="col-lg-6">
+                <h2 class="fw-bold mb-4">От небольшого шоурума до лидера рынка</h2>
+                <p class="text-muted mb-4">
+                    Компания MegaMart была основана в 2010 году. Мы начинали как локальный магазин с узким ассортиментом,
+                    но с большой мечтой — сделать качественную европейскую сантехнику доступной для каждого жителя России.
                 </p>
-            </div>
-        </div>
-    </div>
+                <p class="text-muted mb-4">
+                    Сегодня мы сотрудничаем напрямую с такими гигантами, как Grohe, Roca, Geberit и многими другими.
+                    Это позволяет нам гарантировать подлинность каждого товара и предлагать лучшие цены на рынке.
+                </p>
 
-    <!-- 3. Statistics (Counter) -->
-    <div class="bg-dark text-white rounded-4 p-5 mb-5 cta-pattern-bg shadow-lg">
-        <div class="row text-center g-4">
-            <div class="col-6 col-md-3 border-end border-secondary border-opacity-25">
-                <div class="display-5 fw-bold text-primary mb-1">13</div>
-                <div class="text-white-50 small text-uppercase fw-bold">Лет на рынке</div>
-            </div>
-            <div class="col-6 col-md-3 border-end border-secondary border-opacity-25 d-none d-md-block">
-                <div class="display-5 fw-bold text-primary mb-1">50k+</div>
-                <div class="text-white-50 small text-uppercase fw-bold">Выполненных заказов</div>
-            </div>
-            <div class="col-6 col-md-3 border-end border-secondary border-opacity-25">
-                <div class="display-5 fw-bold text-primary mb-1">500+</div>
-                <div class="text-white-50 small text-uppercase fw-bold">Брендов в каталоге</div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="display-5 fw-bold text-primary mb-1">24/7</div>
-                <div class="text-white-50 small text-uppercase fw-bold">Поддержка клиентов</div>
+                <!-- Mission Quote -->
+                <div class="p-4 bg-surface border rounded-3 border-start border-4 border-primary shadow-sm">
+                    <h5 class="fw-bold mb-2 text-primary"><i class="fas fa-bullseye me-2"></i>Наша миссия</h5>
+                    <p class="fst-italic mb-0 text-muted">
+                        "Сделать процесс ремонта ванной комнаты простым, понятным и вдохновляющим,
+                        предоставляя лучший сервис и экспертную поддержку на каждом этапе."
+                    </p>
+                </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- 4. Values (Using Feature Boxes) -->
-    <div class="mb-5">
-        <h2 class="text-center fw-bold mb-5">Почему выбирают нас?</h2>
-        <div class="row g-4">
-            <div class="col-md-6 col-lg-3">
-                <div class="feature-box h-100">
-                    <div class="feature-icon">
-                        <i class="fas fa-check-double"></i>
-                    </div>
-                    <h5>Оригинальная продукция</h5>
-                    <p class="text-muted small mb-0">Вся продукция сертифицирована и имеет официальную гарантию
-                        производителя.</p>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="feature-box h-100">
-                    <div class="feature-icon">
-                        <i class="fas fa-wallet"></i>
-                    </div>
-                    <h5>Честные цены</h5>
-                    <p class="text-muted small mb-0">Мы работаем без посредников, чтобы вы не переплачивали.</p>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="feature-box h-100">
-                    <div class="feature-icon">
-                        <i class="fas fa-truck-moving"></i>
-                    </div>
-                    <h5>Бережная доставка</h5>
-                    <p class="text-muted small mb-0">Собственная логистическая служба гарантирует сохранность хрупких
-                        товаров.</p>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="feature-box h-100">
-                    <div class="feature-icon">
-                        <i class="fas fa-users-cog"></i>
-                    </div>
-                    <h5>Экспертный подбор</h5>
-                    <p class="text-muted small mb-0">Поможем собрать полный комплект сантехники по вашему
-                        дизайн-проекту.</p>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- 5. Partners / Brands Logo Grid (Optional Visual) -->
-    <div class="text-center pt-4 border-top">
-        <p class="text-muted text-uppercase small fw-bold mb-4">Нам доверяют</p>
-        <div class="d-flex justify-content-center align-items-center flex-wrap gap-4 opacity-50">
-            <i class="fab fa-cc-visa fa-3x"></i>
-            <i class="fab fa-cc-mastercard fa-3x"></i>
-            <i class="fab fa-apple-pay fa-3x"></i>
-            <i class="fab fa-google-pay fa-3x"></i>
-            <!-- Можно добавить логотипы брендов, если есть SVG -->
+    <!-- 4. Statistics (Counter) -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="row text-center g-4">
+                <div class="col-6 col-md-3">
+                    <div class="stats-number">13</div>
+                    <div class="stats-label">Лет на рынке</div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stats-number">50k+</div>
+                    <div class="stats-label">Выполненных заказов</div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stats-number">500+</div>
+                    <div class="stats-label">Брендов в каталоге</div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stats-number">24/7</div>
+                    <div class="stats-label">Поддержка клиентов</div>
+                </div>
+            </div>
         </div>
-    </div>
+    </section>
+
+    <!-- 5. Values (Using Feature Boxes) -->
+    <section class="values-section">
+        <div class="container">
+            <h2 class="text-center fw-bold mb-5">Почему выбирают нас?</h2>
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-box h-100">
+                        <div class="feature-icon">
+                            <i class="fas fa-check-double"></i>
+                        </div>
+                        <h5>Оригинальная продукция</h5>
+                        <p class="text-muted small mb-0">Вся продукция сертифицирована и имеет официальную гарантию
+                            производителя.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-box h-100">
+                        <div class="feature-icon">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <h5>Честные цены</h5>
+                        <p class="text-muted small mb-0">Мы работаем без посредников, чтобы вы не переплачивали.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-box h-100">
+                        <div class="feature-icon">
+                            <i class="fas fa-truck-moving"></i>
+                        </div>
+                        <h5>Бережная доставка</h5>
+                        <p class="text-muted small mb-0">Собственная логистическая служба гарантирует сохранность хрупких
+                            товаров.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-box h-100">
+                        <div class="feature-icon">
+                            <i class="fas fa-users-cog"></i>
+                        </div>
+                        <h5>Экспертный подбор</h5>
+                        <p class="text-muted small mb-0">Поможем собрать полный комплект сантехники по вашему
+                            дизайн-проекту.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- 7. Partners / Brands Logo Grid (Optional Visual) -->
+    <section class="partners-section">
+        <div class="container">
+            <p class="text-muted text-uppercase small fw-bold mb-4">Нам доверяют</p>
+            <div class="d-flex justify-content-center align-items-center flex-wrap gap-4">
+                <i class="fab fa-cc-visa fa-3x partner-logo"></i>
+                <i class="fab fa-cc-mastercard fa-3x partner-logo"></i>
+                <i class="fab fa-apple-pay fa-3x partner-logo"></i>
+                <i class="fab fa-google-pay fa-3x partner-logo"></i>
+                <i class="fas fa-copyright fa-3x partner-logo"></i>
+                <i class="fas fa-trademark fa-3x partner-logo"></i>
+                <!-- Можно добавить логотипы брендов, если есть SVG -->
+            </div>
+        </div>
+    </section>
 </div>
 {% endblock %}

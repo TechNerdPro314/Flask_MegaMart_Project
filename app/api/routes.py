@@ -13,48 +13,25 @@ from .schemas import (
 
 @api_bp.route("/cart/add", methods=["POST"])
 @login_required
-@limiter.limit("30 per minute")
 def api_add_to_cart():
-    """AJAX: Добавить товар в корзину"""
     data = request.get_json()
-    schema = CartAddItemSchema()
-    errors = schema.validate(data)
-    if errors:
-        return jsonify({"success": False, "error": errors}), 400
+    product_id = data.get("product_id")
+    quantity = int(data.get("quantity", 1))
 
-    try:
-        product_id = data["product_id"]
-        quantity = data["quantity"]
-
-        product = Product.query.get_or_404(product_id)
-        if product.in_stock < quantity:
-            return jsonify({"success": False, "error": "Нет в наличии"}), 400
-
-        cart_item = Cart.query.filter_by(
-            user_id=current_user.id, product_id=product_id
-        ).first()
-        if cart_item:
-            cart_item.quantity += quantity
-        else:
-            cart_item = Cart(
-                user_id=current_user.id, product_id=product_id, quantity=quantity
-            )
-            db.session.add(cart_item)
-
-        db.session.commit()
-        cart_count = sum(item.quantity for item in current_user.cart_items.all())
-        return jsonify(
-            {
-                "success": True,
-                "message": f"Добавлено: {product.name}",
-                "cart_count": cart_count,
-            }
-        )
-
-    except Exception as e:
-        db.session.rollback()
-        current_app.logger.error(f"Error in api_add_to_cart: {e}")
-        return jsonify({"success": False, "error": "Internal server error"}), 500
+    # Используем сервис из Этапа 1
+    from app.services.cart_service import CartService
+    success, message = CartService.add_item(current_user, product_id, quantity)
+    
+    if success:
+        # Считаем количество товаров для обновления счетчика
+        cart_count = sum(item.quantity for item in current_user.cart_items)
+        return jsonify({
+            "success": True,
+            "message": message,
+            "cart_count": cart_count
+        })
+    
+    return jsonify({"success": False, "error": message}), 400
 
 
 @api_bp.route("/cart/remove", methods=["POST"])

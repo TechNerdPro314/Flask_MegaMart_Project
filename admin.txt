@@ -1,5 +1,0 @@
-admin@megamart.com
-supersecret123
-
-flask db migrate -m "Add wishlist and reviews"
-flask db upgrade
