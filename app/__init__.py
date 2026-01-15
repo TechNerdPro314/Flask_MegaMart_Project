@@ -17,13 +17,15 @@ from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from flask_talisman import Talisman
 from flask_assets import Environment, Bundle
 from flask_mail import Mail
 from config import config
 from logging.handlers import SMTPHandler, RotatingFileHandler
 from celery import Celery
 from slugify import slugify
+from flask_jwt_extended import JWTManager
+from redis import Redis 
+
 # Configure rate limiting with Redis storage
 from limits.storage.redis import RedisStorage
 
@@ -34,6 +36,7 @@ login_manager.login_message_category = "info"
 cache = Cache()
 migrate = Migrate()
 csrf = CSRFProtect()
+jwt = JWTManager()
 limiter = Limiter(
     key_func=get_remote_address, default_limits=["200 per day", "50 per hour"]
 )
@@ -68,7 +71,7 @@ def create_app(config_name="default"):
             profiles_sample_rate=0.1,
         )
     
-    # <--- 2. ДОБАВИТЬ ЭТУ СТРОКУ (Регистрация фильтра)
+    # Регистрация фильтра slugify
     app.jinja_env.filters['slugify'] = slugify
 
     # Функция для склонения числительных (товар, товара, товаров)
@@ -113,13 +116,16 @@ def create_app(config_name="default"):
         status_code = 200 if health_status["status"] == "healthy" else 503
         return jsonify(health_status), status_code
 
-    if not app.config["DEBUG"] and not app.config["TESTING"]:
-        Talisman(app, content_security_policy=None)  # CSP can be customized per need
+    # Talisman commented out to disable HTTPS enforcement
+    # if not app.config["DEBUG"] and not app.config["TESTING"]:
+    #     Talisman(app, content_security_policy=None)  # CSP can be customized per need
+        
     db.init_app(app)
     login_manager.init_app(app)
     cache.init_app(app)
     migrate.init_app(app, db)
     csrf.init_app(app)
+    jwt.init_app(app)
     
     try:
         redis_client = Redis.from_url(app.config["CACHE_REDIS_URL"])
@@ -158,7 +164,6 @@ def create_app(config_name="default"):
     assets.register("js_all", critical_js_bundle)  # Регистрируем как js_all вместо critical_js
     assets.register("non_critical_js", non_critical_js_bundle)
 
-    # ... (далее код без изменений) ...
     if not app.debug and not app.testing:
         # Create logs directory if it doesn't exist
         logs_dir = "logs"
@@ -399,6 +404,9 @@ def create_app(config_name="default"):
 
         app.register_blueprint(cart_app, url_prefix="/cart")
         from .api import api_bp
+
+        # Отключаем CSRF для API (так как мобильное приложение использует JWT)
+        csrf.exempt(api_bp)
 
         app.register_blueprint(api_bp, url_prefix="/api")
         app.jinja_env.globals.update(now=datetime.now)

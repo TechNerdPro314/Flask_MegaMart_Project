@@ -11,6 +11,11 @@ class Config:
     if not SECRET_KEY:
         raise RuntimeError("SECRET_KEY must be set in environment variables for production!")
     
+    # Настройки JWT (для мобильного API)
+    JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY") or "super-secret-jwt-key"
+    # Токен живет 30 дней (для удобства в мобильном приложении)
+    JWT_ACCESS_TOKEN_EXPIRES = 2592000  # 30 дней в секундах
+    
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     WTF_CSRF_ENABLED = True
     GOOGLE_ANALYTICS_ID = os.environ.get("GOOGLE_ANALYTICS_ID")
@@ -67,17 +72,9 @@ class ProductionConfig(Config):
         "max_overflow": int(os.environ.get("DB_MAX_OVERFLOW") or 20),
     }
 
-    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = False
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
-
-    # Security headers
-    SECURITY_HEADERS = {
-        "X-Content-Type-Options": "nosniff",
-        "X-Frame-Options": "SAMEORIGIN",
-        "X-XSS-Protection": "1; mode=block",
-        "Referrer-Policy": "strict-origin-when-cross-origin",
-    }
 
 
 config = {
